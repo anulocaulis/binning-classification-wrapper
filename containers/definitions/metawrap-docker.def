@@ -1,0 +1,55 @@
+# This is a Dockerfile converted from the metawrap.def Apptainer/Singularity file.
+
+# 1. Base Image
+# Replaces 'Bootstrap: docker' and 'From: continuumio/miniconda3:latest'
+FROM continuumio/miniconda3:latest
+
+# 2. Labels (Metadata)
+# Replaces %labels
+LABEL maintainer="lowry-nitrogen-team"
+LABEL creationdate="2025-10-06"
+LABEL version="1.3.2-conda"
+LABEL description="Docker container for the MetaWRAP metagenomic binning, assembly, and refinement pipeline."
+
+# 3. Environment Variables
+# Replaces %environment
+ENV LC_ALL=C
+# Set the path to the MetaWRAP conda environment
+ENV PATH="/opt/conda/envs/metawrap/bin:${PATH}"
+
+# 4. Installation and Setup
+# Replaces %post - combined into a single RUN block for efficiency and smaller image size
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        wget \
+        git \
+        bzip2 \
+        libncurses5 \
+        zlib1g-dev \
+        liblzma-dev \
+        build-essential && \
+    # Clean up APT cache immediately
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    \
+    # 2. Setup Conda environment for MetaWRAP
+    /opt/conda/bin/conda create -n metawrap python=3.9 -y && \
+    \
+    # 3. Activate environment and install MetaWRAP and dependencies
+    /opt/conda/bin/conda run -n metawrap conda install -c conda-forge -c bioconda \
+        metawrap=1.3.2 \
+        maxbin2 \
+        metabat2 \
+        concoct \
+        checkm2 \
+        gtdbtk \
+        -y && \
+    \
+    # 4. Clean up Conda caches to minimize final image size
+    /opt/conda/bin/conda clean -a -y
+
+# 5. Default Command for Execution
+# Replaces %runscript - use ENTRYPOINT to make 'metawrap' the primary command
+# and CMD as a default argument (like a help/version check)
+ENTRYPOINT ["/opt/conda/envs/metawrap/bin/metawrap"]
+CMD ["-h"]
