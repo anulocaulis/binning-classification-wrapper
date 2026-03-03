@@ -18,8 +18,9 @@ assemblies:
   file: assembly.fasta
 
 # Database paths
-# Update this to the absolute path of your Kraken2 database before running.
+# Update these to absolute paths before running.
 kraken2_db: /path/to/kraken2_db
+gtdbtk_db: /path/to/gtdbtk_db
 
 # Set the number of threads for your jobs on the HPC.
 threads: 16
