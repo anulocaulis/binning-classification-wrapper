@@ -1,0 +1,34 @@
+# config.yaml
+# Define your samples here.
+
+# Sample lists
+samples:
+  - S1
+  - S2
+  - S3
+
+# Specify the base paths for your real data files.
+input_reads:
+  short_interleaved: /storage/biology/projects/miller-lowry/beitner/data/{sample}_interleaved.fastq.gz
+  long_fastq: /storage/biology/projects/miller-lowry/beitner/data/{sample}_long_reads_filtered.fastq.gz
+
+# Path to pre-computed assemblies (output from assembly-eval-wrapper)
+assemblies:
+  dir: assembly_outputs
+  file: assembly.fasta
+
+# Database paths
+# Update these to absolute paths before running.
+kraken2_db: /path/to/kraken2_db
+gtdbtk_db: /path/to/gtdbtk_db
+
+# Set the number of threads for your jobs on the HPC.
+threads: 16
+
+# Output directories
+output_dir: 'binning_outputs'
+classification_output_dir: 'classification_outputs'
+
+# Container paths
+METAWRAP_CONTAINER: 'containers/metawrap.sif'
+CLASSIFICATION_CONTAINER: 'containers/classification.sif'

@@ -1,0 +1,67 @@
+Bootstrap: docker
+From: continuumio/miniconda3:latest
+
+# To build this container image, use the command below on a Linux machine with Singularity:
+# sudo singularity build classification.sif classification.def
+
+%environment
+    export LC_ALL=C
+    export PATH=/opt/conda/envs/classification/bin:/opt/conda/bin:$PATH
+
+%post
+    # 1. Update APT and install core dependencies
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        wget \
+        git \
+        bzip2 \
+        build-essential && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+    # 2. Setup Conda environment for classification tools
+    /opt/conda/bin/conda create -n classification -y
+
+    # 3. Install Kraken2, Bracken, and MetaPhlAn
+    /opt/conda/bin/conda run -n classification conda install \
+        --channel conda-forge \
+        --channel bioconda \
+        --override-channels \
+        kraken2 \
+        bracken \
+        metaphlan \
+        -y
+
+    # 4. Clean up Conda caches to minimize final image size
+    /opt/conda/bin/conda clean -a -y
+
+%runscript
+    exec "$@"
+
+%labels
+Maintainer lowry-nitrogen-team
+CreationDate 2025-10-06
+Version 1.0-conda
+Description Singularity container with metagenomics classification tools: Kraken2, Bracken, MetaPhlAn.
+
+%help
+This Singularity container provides tools for taxonomic classification of metagenomic reads.
+
+Tools included:
+- kraken2 (k-mer based taxonomic classification)
+- bracken (Bayesian re-estimation of abundance with Kraken2 results)
+- metaphlan (marker gene based taxonomic profiling)
+
+USAGE:
+To run any installed tool, use the 'exec' command and specify the tool name:
+singularity exec classification.sif <tool_name> <tool_options>
+
+Examples:
+- To run Kraken2:
+  singularity exec classification.sif kraken2 --db /path/to/db --report report.txt reads.fastq
+
+- To run Bracken:
+  singularity exec classification.sif bracken -d /path/to/db -i report.txt -o bracken_output.txt
+
+- To run MetaPhlAn:
+  singularity exec classification.sif metaphlan reads.fastq --input_type fastq -o profiled_output.txt
