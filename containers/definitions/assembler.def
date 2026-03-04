@@ -1,0 +1,125 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+
+# To build this container image, use the command below:
+# sudo singularity build assembler.sif assembler.def
+
+
+%environment
+    export LC_ALL=C
+    export PATH=/usr/local/bin:$PATH
+
+%post
+    # Update and install core system dependencies
+    apt-get update -y
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        autoconf \
+        automake \
+        cmake \
+        wget \
+        git \
+        zlib1g-dev \
+        libboost-all-dev \
+        libbz2-dev \
+        liblzma-dev \
+        python3 \
+        python3-pip \
+        curl \
+        unzip \
+        default-jre \
+        bzip2 \
+        ca-certificates \
+        libssl-dev 
+
+
+    # Download and install Miniconda
+    curl -sSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+    bash miniconda.sh -b -p /opt/conda
+    rm miniconda.sh
+    
+        # Add conda to PATH for this script (MUST be done before first conda command)
+    export PATH="/opt/conda/bin:$PATH"
+
+    # --- Install ALL Assemblers/Polishers via Bioconda/Conda-Forge ---
+    # We explicitly list all necessary channels once and use --override-channels
+    # to bypass the problematic 'defaults' channel TOS issue.
+    conda install -y \
+        idba \
+        megahit \
+        spades \
+        nextpolish \
+        metamdbg \
+        --channel bioconda \
+        --channel conda-forge \
+        --override-channels
+
+    # --- Clean up after Conda installation ---
+    conda clean --all -y
+
+%environment
+    # Set the default locale
+    export LC_ALL=C
+    
+    # 1. Add Miniconda binaries to the PATH
+    export PATH="/opt/conda/bin:$PATH"
+    
+    # 2. Add the directory where manually compiled/copied tools reside
+    export PATH="/usr/local/bin:$PATH"
+    
+    # Set a default command to run if needed, but 'exec "$@"' handles it below
+    # export ASSEMBLER_DEFAULT="spades.py" 
+
+
+%runscript
+    echo "==================================================================="
+    echo "This container includes the following assemblers and polishers:"
+    echo "  - idba_ud"
+    echo "  - megahit"
+    echo "  - flye"
+    echo "  - nanomdbg"
+    echo "  - spades.py (for MetaSPAdes/SPAdes)"
+    echo "  - nextpolish.py"
+    echo "-------------------------------------------------------------------"
+    echo "To run a specific tool, specify it as an argument, e.g.:"
+    echo "singularity exec assembler.sif megahit --help"
+    echo "singularity exec assembler.sif flye --version"
+    echo "==================================================================="
+    
+    # Execute the command passed by the user
+    exec "$@" 
+
+%labels
+Maintainer lowry-nitrogen-team
+CreationDate 2025-10-06
+Version 1.1-conda
+Description Singularity container with assembly tools: idba_ud, megahit, flye, nanomdbg, spades, nextpolish.
+
+
+%help
+This Apptainer (Singularity) container provides a comprehensive environment
+for assembling both short (Illumina) and long (Nanopore/PacBio) reads,
+including the following key tools:
+
+Assembly Tools:
+- idba_ud (for highly uneven depth data, e.g., metagenomes)
+- megahit (fast metagenomic assembler)
+- flye (for long reads, e.g., Nanopore/PacBio)
+- nanomdbg (long-read error correction and assembly helper)
+- spades.py/metaspades.py (high-quality, general purpose and metagenomic assembly)
+
+Polishing Tool:
+- nextpolish.py (for error correction/polishing of assemblies)
+
+USAGE:
+To run any installed tool, use the 'exec' command and specify the tool name:
+
+singularity exec assembler.sif <tool_name> <tool_options>
+
+Examples:
+- To run Flye:
+  singularity exec assembler.sif flye --genome-size 5m --threads 8 --out-dir flye_out /data/reads.fastq
+
+- To run MetaSPAdes (via spades.py):
+  singularity exec assembler.sif spades.py --meta --threads 16 --out-dir spades_out -1 R1.fastq -2 R2.fastq

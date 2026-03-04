@@ -5,7 +5,8 @@
 
 # Ignore Snakemake internal files and output directories
 .snakemake/
-assembly_outputs/
+binning_outputs/
+classification_outputs/
 qc/
 logs/
 slurm_logs/
