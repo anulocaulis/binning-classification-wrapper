@@ -1,0 +1,19 @@
+# Snakemake Profile for SLURM Submission 
+
+# 1. GENERAL SNAKEMAKE SETTINGS
+jobs: 13                        # Reduced from 20 to prevent OOM - limits concurrent jobs to 5
+use-conda: True
+conda-frontend: mamba
+latency-wait: 4               # Time (seconds) to wait between job status checks
+
+# 2. SNAKEMAKE RESOURCE DEFAULTS
+executor: slurm
+default-resources:
+  slurm_partition: "math-alderaan"
+  runtime: "2880"             # 48 hours in minutes (max for math-alderaan is 7 days)
+  mem_mb: 360000              # Increased to 350GB per job (was 240GB) - prevents metaspades OOM
+  threads: 16                 # 16 threads per job - good balance for assembly
+  slurm_account: biology-miller-annotation
+  slurm_logdir: /storage/biology/projects/miller-lowry/beitner/Lowry-assemblies/slurm_logs
+  slurm_mail_type: "END,FAIL"  # Email on job completion or failure
+  slurm_mail_user: "mike.beitner@ucdenver.edu"

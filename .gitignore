@@ -1,0 +1,12 @@
+# Ignore compiled singularity/apptainer containers
+# these can be very large files and are better stored outside the repo
+*.sif
+*.simg
+
+# Ignore Snakemake internal files and output directories
+.snakemake/
+assembly_outputs/
+qc/
+logs/
+slurm_logs/
+data/

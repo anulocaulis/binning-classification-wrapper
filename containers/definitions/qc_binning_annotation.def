@@ -1,0 +1,45 @@
+Bootstrap: docker
+From: mambaorg/micromamba:latest
+
+%labels
+    Author Mike Beitner
+    Version v1.0
+    Description "Metagenomics Master Suite: Binning, Classification, Assembly Statistics multitool"
+    Included_Tools "BBTools, CheckM2, BUSCO, Prokka, MetaQUAST, Kraken2, dRep, CoverM, MetaWRAP, MultiQC"
+
+%environment
+    # Add all three environment paths to the system PATH
+    export PATH=/opt/conda/envs/base_tools/bin:/opt/conda/envs/checkm2/bin:/opt/conda/envs/metawrap/bin:$PATH
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+
+%post
+    apt-get update && apt-get install -y \
+        wget bzip2 ca-certificates git build-essential \
+        libgl1 libgbm1 perl-base libperl-dev libxml-simple-perl \
+        libipc-run-perl libdatetime-perl
+    
+    # 1. BASE TOOLS (Python 3.9)
+    micromamba create -y -p /opt/conda/envs/base_tools -c bioconda -c conda-forge \
+        python=3.9 bbmap busco=6.0.0 sepp=4.5.5 prokka quast kraken2 drep coverm multiqc
+
+    # 2. CHECKM2 (Isolated Python 3.8 to satisfy its requirements)
+    micromamba create -y -p /opt/conda/envs/checkm2 -c bioconda -c conda-forge \
+        python=3.8 checkm2
+
+
+    micromamba clean --all -y
+
+%runscript
+    exec "$@"
+
+%help
+    Metagenomics Master Suite (MMS)
+    
+    This container covers the entire workflow:
+    1. QC/Preprocessing: BBTools (bbduk, bbmap, etc.)
+    2. Classification: Kraken2
+    3. Binning/Refinement: MetaWRAP, dRep, CoverM
+    4. Quality/Evaluation: CheckM2, BUSCO, MetaQUAST
+    5. Annotation: Prokka
+    6. Reporting: MultiQC

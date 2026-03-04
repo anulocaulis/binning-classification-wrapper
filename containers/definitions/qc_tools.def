@@ -1,0 +1,72 @@
+Bootstrap: docker
+From: ubuntu:20.04
+
+# To build this container image, use the command below:
+
+# sudo singularity build qc_tools.sif qc.def
+
+%post
+# Update packages and install core dependencies
+apt-get update
+apt-get install -y --no-install-recommends wget git bzip2 tar  unzip \
+openjdk-17-jre-headless python3 python3-pip python3-setuptools \
+build-essential libz-dev libjemalloc-dev
+
+#install bbmap
+wget https://sourceforge.net/projects/bbmap/files/BBMap_39.01.tar.gz -O /tmp/BBMap_39.01.tar.gz
+mkdir /opt/bbmap
+tar -xvzf /tmp/BBMap_39.01.tar.gz -C /opt/bbmap/ --strip-components 1
+rm /tmp/BBMap_39.01.tar.gz
+
+#install nanoplot
+pip3 install nanoplot
+pip3 install nanoQC
+pip3 install kaleido
+
+# install fastqc
+wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip -O fastqc.zip
+unzip fastqc.zip -d /opt/
+chmod 755 /opt/FastQC/fastqc
+rm fastqc.zip
+
+# install quast
+pip3 install quast
+
+apt-get clean
+rm -rf /var/lib/apt/lists/*
+
+%environment
+# Add all tool directories to the PATH
+export PATH="/usr/local/bin:/opt/bbmap:/opt/FastQC:$PATH"
+
+%runscript
+echo "This container includes BBTools, NanoPlot, FastQC, and MetaQUAST."
+echo "To run a specific tool, specify it as an argument, e.g.:"
+echo "singularity exec qc_tools.sif stats.sh"
+echo "singularity exec qc_tools.sif fastqc"
+echo "singularity exec qc_tools.sif nanoplot"
+echo "singularity exec qc_tools.sif metaquast"
+exec "$@"
+
+%labels
+Maintainer lowry-nitrogen-team
+CreationDate 2025-09-23
+Version 1.0
+Description Singularity container with QC tools: BBTools, NanoPlot, FastQC, and MetaQUAST.
+
+%help
+This Singularity container provides a ready-to-use environment for
+several common genomics analysis tools for quality control:
+\- BBTools (BBDuk, Stats.sh, etc.)
+\- NanoPlot (for ONT read QC)
+\- FastQC (for Illumina read QC)
+\- MetaQUAST (for assembly quality metrics)
+
+To use a tool, execute the container and specify the tool's command:
+singularity exec qc_tools.sif <tool_name> <options>
+
+For example:
+singularity exec qc_tools.sif stats.sh --help
+singularity exec qc_tools.sif nanoplot --help
+singularity exec qc_tools.sif fastqc --help
+singularity exec qc_tools.sif metaquast --help

@@ -1,0 +1,49 @@
+# Configuration file for Metagenomic Multi-Assembly Wrapper
+
+# TEST MODE - Set to True to only run on S5 (has both long and short reads)
+# Set to False to run all samples configured below
+test_mode: False
+
+# Data directory (absolute path) - organized by sample
+data_dir: "/storage/biology/projects/miller-lowry/beitner/data"
+
+# Sample names organized by read type
+# long_read_samples: have both long and short reads (ONT + Illumina)
+long_read_samples:
+  - S1
+  - S2
+  - S5
+
+# all samples: includes both long+short and short-only samples
+# short-only: S3, S4, S6, S7, S8, S9, S10, S11, S12
+all_samples:
+  - S1
+  - S2
+  - S3
+  - S4
+  - S5
+  - S6
+  - S7
+  - S8
+  - S9
+  - S10
+  - S11
+  - S12
+
+# Output directory for all assemblies (relative to working directory)
+output_dir: "assemblies"
+
+# Number of threads to use (can be overridden per rule)
+threads: 16
+
+# Input read files - consistent naming pattern for all samples
+# Each sample directory contains: long_reads.bam and short_reads.fastq.gz
+input_reads:
+  long_bam: "/storage/biology/projects/miller-lowry/beitner/data/{sample}/long_reads.bam"
+  short_interleaved: "/storage/biology/projects/miller-lowry/beitner/data/{sample}/short_reads.fastq.gz"
+
+# Optional ONT adapter trimming (Porechop)
+porechop:
+  enabled: true
+  threads: 8
+  extra_args: ""
