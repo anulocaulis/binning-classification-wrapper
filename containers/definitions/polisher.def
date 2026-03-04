@@ -1,0 +1,124 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+
+# To build this container image, use the command below:
+# sudo singularity build polisher.sif polisher.def
+
+
+%environment
+    export LC_ALL=C
+    export PATH="/usr/local/bin:/tmp/NextPolish:$PATH"
+
+%post
+    # Update and install core system dependencies
+    apt-get update -y
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        autoconf \
+        automake \
+        cmake \
+        wget \
+        git \
+        zlib1g-dev \
+        libboost-all-dev \
+        libbz2-dev \
+        liblzma-dev \
+        python3 \
+        python3-pip \
+        curl \
+        unzip \
+        default-jre \
+        bzip2 \
+        ca-certificates \
+        libssl-dev 
+
+
+    # Download and install Miniconda
+    curl -sSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+    bash miniconda.sh -b -p /opt/conda
+    rm miniconda.sh
+    
+        # Add conda to PATH for this script (MUST be done before first conda command)
+    export PATH="/opt/conda/bin:$PATH"
+    # Install Python dependency paralleltask
+    pip install paralleltask
+
+    # Install NextPolish from the official release tarball
+    # This avoids conda solver issues and installs pre-built, tested binaries
+    cd /tmp && \
+    wget -q https://github.com/Nextomics/NextPolish/releases/download/v1.4.1/NextPolish.tgz && \
+    tar -xzf NextPolish.tgz && \
+    cd NextPolish && \
+    make && \
+    chmod +x /tmp/NextPolish/nextPolish && \
+    mv /tmp/NextPolish/nextPolish /usr/local/bin/nextPolish && \
+    cd / && rm -rf /tmp/NextPolish* && \
+    echo "NextPolish installed successfully"
+
+    # Add /tmp/NextPolish to PATH:
+    export PATH=$PATH:/tmp/NextPolish
+    
+    # --- Clean up after Conda installation ---
+    conda clean --all -y
+
+%environment
+    # Set the default locale
+    export LC_ALL=C
+    
+    # 1. Add Miniconda binaries to the PATH
+    export PATH="/opt/conda/bin:$PATH"
+    
+    # 2. Add the directory where manually compiled/copied tools reside
+    export PATH="/usr/local/bin:$PATH"
+    
+    # Set a default command to run if needed, but 'exec "$@"' handles it below
+    # export ASSEMBLER_DEFAULT="spades.py" 
+
+
+%runscript
+    echo "==================================================================="
+    echo "This container includes the NextPolish polishing tool:"
+    echo "  - nextPolish (genome assembly error correction/polishing)"
+    echo "-------------------------------------------------------------------"
+    echo "To run NextPolish, use the 'exec' command:"
+    echo "singularity exec polisher.sif nextPolish <config_file>"
+    echo "singularity exec polisher.sif nextPolish --help"
+    echo "==================================================================="
+    
+    # Execute the command passed by the user
+    exec "$@" 
+
+%labels
+Maintainer lowry-nitrogen-team
+CreationDate 2025-11-17
+Version 1.0-nextpolish
+Description Singularity container with NextPolish for genome assembly polishing
+
+
+%help
+This Apptainer (Singularity) container provides a comprehensive environment
+for assembling both short (Illumina) and long (Nanopore/PacBio) reads,
+including the following key tools:
+
+Assembly Tools:
+- idba_ud (for highly uneven depth data, e.g., metagenomes)
+- megahit (fast metagenomic assembler)
+- flye (for long reads, e.g., Nanopore/PacBio)
+- nanomdbg (long-read error correction and assembly helper)
+- spades.py/metaspades.py (high-quality, general purpose and metagenomic assembly)
+
+Polishing Tool:
+- nextpolish.py (for error correction/polishing of assemblies)
+
+USAGE:
+To run any installed tool, use the 'exec' command and specify the tool name:
+
+singularity exec assembler.sif <tool_name> <tool_options>
+
+Examples:
+- To run Flye:
+  singularity exec assembler.sif flye --genome-size 5m --threads 8 --out-dir flye_out /data/reads.fastq
+
+- To run MetaSPAdes (via spades.py):
+  singularity exec assembler.sif spades.py --meta --threads 16 --out-dir spades_out -1 R1.fastq -2 R2.fastq

@@ -1,0 +1,77 @@
+# This is a Dockerfile converted from an Apptainer/Singularity definition file.
+# To build this container image, use the command:
+# docker build -t assembler.def .
+
+# 1. Base Image
+FROM ubuntu:22.04
+
+# 2. Environment Variables
+# Replaces %environment
+ENV LC_ALL=C
+ENV PATH="/usr/local/bin:${PATH}"
+
+# 3. Installation and Setup
+# Replaces %post - All build steps are combined into a single RUN instruction
+# to create a single, efficient layer and keep the image size down.
+RUN apt-get update -y && \
+    apt-get install -y \
+        build-essential \
+        wget \
+        git \
+        zlib1g-dev \
+        libboost-all-dev \
+        libbz2-dev \
+        liblzma-dev \
+        python3 \
+        python3-pip \
+        unzip \
+        default-jre && \
+    \
+    # --- Install IDBA-UD ---
+    wget https://github.com/lone-ranger/idba_ud/archive/refs/tags/1.1.3.zip -O idba_ud.zip && \
+    unzip idba_ud.zip && \
+    cd idba_ud-1.1.3 && \
+    ./configure && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf idba_ud* && \
+    \
+    # --- Install MEGAHIT ---
+    wget https://github.com/megahit/megahit/releases/download/v1.2.9/MEGAHIT-1.2.9-Linux-x86_64-static.tar.gz && \
+    tar zxf MEGAHIT-1.2.9-Linux-x86_64-static.tar.gz && \
+    cp MEGAHIT-1.2.9-Linux-x86_64-static/bin/megahit /usr/local/bin/ && \
+    rm -rf MEGAHIT-1.2.9-Linux-x86_64-static* && \
+    \
+    # --- Install Flye ---
+    pip3 install flye && \
+    \
+    # --- Install NanoMDBG ---
+    git clone https://github.com/fender-lab/NanoMDBG.git && \
+    cd NanoMDBG && \
+    make && \
+    cp bin/nanomdbg /usr/local/bin/ && \
+    cd .. && \
+    rm -rf NanoMDBG && \
+    \
+    # --- Install SPAdes and NextPolish ---
+    wget http://cab.spbu.ru/files/release3.15.5/SPAdes-3.15.5-Linux.tar.gz && \
+    tar zxf SPAdes-3.15.5-Linux.tar.gz && \
+    cp SPAdes-3.15.5-Linux/bin/metaspades.py /usr/local/bin/ && \
+    cp SPAdes-3.15.5-Linux/bin/spades.py /usr/local/bin/ && \
+    cp -r SPAdes-3.15.5-Linux/bin/spades-core /usr/local/bin/ && \
+    \
+    wget https://github.com/Nextomics/NextPolish/releases/download/v1.4.1/NextPolish-v1.4.1.tar.gz && \
+    tar zxf NextPolish-v1.4.1.tar.gz && \
+    cp NextPolish/nextpolish.py /usr/local/bin/ && \
+    cp NextPolish/NextPolish.py /usr/local/bin/ && \
+    rm -rf SPAdes-3.15.5-Linux* NextPolish-v1.4.1.tar.gz NextPolish && \
+    \
+    # Clean up (must be in the same RUN block to be effective)
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 4. Define the default action when the container runs
+# (Since there was no %runscript, we'll just set the default shell)
+CMD ["/bin/bash"]
