@@ -1,4 +1,4 @@
-# Configuration file for Metagenomic Multi-Assembly Wrapper
+# Configuration file for Metagenomic Binning and Classification Wrapper
 
 # TEST MODE - Set to True to only run on S5 (has both long and short reads)
 # Set to False to run all samples configured below
@@ -30,8 +30,8 @@ all_samples:
   - S11
   - S12
 
-# Output directory for all assemblies (relative to working directory)
-output_dir: "assemblies"
+# Output directory for all binning/classification results (relative to working directory)
+output_dir: "binning_outputs"
 
 # Number of threads to use (can be overridden per rule)
 threads: 16
@@ -41,9 +41,10 @@ threads: 16
 input_reads:
   long_bam: "/storage/biology/projects/miller-lowry/beitner/data/{sample}/long_reads.bam"
   short_interleaved: "/storage/biology/projects/miller-lowry/beitner/data/{sample}/short_reads.fastq.gz"
+  assembly: "/storage/biology/projects/miller-lowry/beitner/assemblies/{sample}/assembly.fasta"
 
-# Optional ONT adapter trimming (Porechop)
-porechop:
-  enabled: true
-  threads: 8
-  extra_args: ""
+# Path to Kraken2 database (for read classification)
+kraken2_db: "/storage/biology/projects/miller-lowry/beitner/databases/kraken2_db"
+
+# Path to GTDB-Tk database (for bin taxonomic classification)
+gtdbtk_db: "/storage/biology/projects/miller-lowry/beitner/databases/gtdbtk_db"
