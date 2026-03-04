@@ -48,3 +48,48 @@ kraken2_db: "/storage/biology/projects/miller-lowry/beitner/databases/kraken2_db
 
 # Path to GTDB-Tk database (for bin taxonomic classification)
 gtdbtk_db: "/storage/biology/projects/miller-lowry/beitner/databases/gtdbtk_db"
+
+# ---
+# Assembly comparison settings (SR/LR/Hybrid)
+# comparison_samples defaults to long_read_samples when omitted
+assembly_types:
+  - sr
+  - lr
+  - hybrid
+
+# Optional: limit assembly comparison to specific samples
+comparison_samples:
+  - S1
+  - S2
+  - S5
+
+# Optional: explicit assembly paths for each assembly type
+# If any type is omitted, pipeline falls back to input_reads.assembly
+assembly_inputs:
+  sr: "/storage/biology/projects/miller-lowry/beitner/assemblies/{sample}/sr/assembly.fasta"
+  lr: "/storage/biology/projects/miller-lowry/beitner/assemblies/{sample}/lr/assembly.fasta"
+  hybrid: "/storage/biology/projects/miller-lowry/beitner/assemblies/{sample}/hybrid/assembly.fasta"
+
+# ONT FASTQ input for Filtlong (required for long-read filtering step)
+ont_reads: "/storage/biology/projects/miller-lowry/beitner/data/{sample}/long_reads.fastq.gz"
+
+# Filtlong options
+filtlong:
+  min_length: 1000
+  min_mean_q: 10
+
+# metaQUAST options
+metaquast:
+  extra_args: ""
+
+# GUNC database (optional, but recommended)
+gunc_db: ""
+
+# BUSCO options
+busco:
+  lineage: "bacteria_odb10"
+  mode: "genome"
+
+# Prokka options
+prokka:
+  kingdom: "Bacteria"

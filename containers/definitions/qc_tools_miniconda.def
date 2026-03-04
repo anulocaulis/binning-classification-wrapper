@@ -12,7 +12,7 @@ apt-get install -y --no-install-recommends wget git bzip2 tar unzip
 
 # Install bioinformatics tools with Conda
 conda install -n base -c bioconda -c conda-forge -y openjdk=17 \
-bbmap nanoplot nanoQC fastqc quast chopper
+bbmap nanoplot nanoQC fastqc quast chopper multiqc
 
 # cleanup cache
 apt-get clean
@@ -26,19 +26,20 @@ export PATH="/opt/conda/envs/$CONDA_ENV/bin:/opt/conda/bin:$PATH"
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64" # May be needed for BBMap if manually installed
 
 %runscript
-echo "This container includes BBTools, NanoPlot, FastQC, and MetaQUAST."
+echo "This container includes BBTools, NanoPlot, FastQC, MetaQUAST, and MultiQC."
 echo "To run a specific tool, specify it as an argument, e.g.:"
-echo "singularity exec qc_tools.sif stats.sh"
-echo "singularity exec qc_tools.sif fastqc"
-echo "singularity exec qc_tools.sif nanoplot"
-echo "singularity exec qc_tools.sif metaquast"
+echo "singularity exec qc_tools_miniconda.sif stats.sh"
+echo "singularity exec qc_tools_miniconda.sif fastqc"
+echo "singularity exec qc_tools_miniconda.sif nanoplot"
+echo "singularity exec qc_tools_miniconda.sif metaquast"
+echo "singularity exec qc_tools_miniconda.sif multiqc"
 exec "$@"
 
 %labels
 Maintainer lowry-nitrogen-team
 CreationDate 2025-09-30
-Version 1.1-conda
-Description Singularity container with QC tools: BBTools, NanoPlot, FastQC, and MetaQUAST.
+Version 1.2-conda
+Description Singularity container with QC tools: BBTools, NanoPlot, FastQC, MetaQUAST, and MultiQC.
 
 %help
 This Singularity container provides a ready-to-use environment for
@@ -47,12 +48,14 @@ several common genomics analysis tools for quality control:
 \- NanoPlot (for ONT read QC)
 \- FastQC (for Illumina read QC)
 \- MetaQUAST (for assembly quality metrics)
+\- MultiQC (aggregated QC reporting)
 
 To use a tool, execute the container and specify the tool's command:
-singularity exec qc_tools.sif <tool_name> <options>
+singularity exec qc_tools_miniconda.sif <tool_name> <options>
 
 For example:
-singularity exec qc_tools.sif stats.sh --help
-singularity exec qc_tools.sif nanoplot --help
-singularity exec qc_tools.sif fastqc --help
-singularity exec qc_tools.sif metaquast --help
+singularity exec qc_tools_miniconda.sif stats.sh --help
+singularity exec qc_tools_miniconda.sif nanoplot --help
+singularity exec qc_tools_miniconda.sif fastqc --help
+singularity exec qc_tools_miniconda.sif metaquast --help
+singularity exec qc_tools_miniconda.sif multiqc --help
