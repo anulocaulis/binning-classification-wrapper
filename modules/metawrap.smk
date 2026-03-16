@@ -14,11 +14,11 @@ rule metawrap_binning:
 		assembly=lambda wildcards: config["input_reads"]["assembly"].format(sample=wildcards.sample),
 		reads=lambda wildcards: config["input_reads"]["short_interleaved"].format(sample=wildcards.sample)
 	output:
-		metabat2=directory("{output_dir}/{sample}/binning/metabat2"),
-		maxbin2=directory("{output_dir}/{sample}/binning/maxbin2"),
-		concoct=directory("{output_dir}/{sample}/binning/concoct")
+		metabat2=directory(f"{OUTPUT_DIR}/{{sample}}/binning/metabat2"),
+		maxbin2=directory(f"{OUTPUT_DIR}/{{sample}}/binning/maxbin2"),
+		concoct=directory(f"{OUTPUT_DIR}/{{sample}}/binning/concoct")
 	params:
-		outdir="{output_dir}/{sample}/binning",
+		outdir=f"{OUTPUT_DIR}/{{sample}}/binning",
 		container=METAWRAP_CONTAINER,
 		min_contig_len=1000
 	threads: config["threads"]
@@ -45,13 +45,13 @@ rule metawrap_bin_refinement:
 	bin_refinement module. Produces a high-quality, non-redundant bin set.
 	"""
 	input:
-		metabat2="{output_dir}/{sample}/binning/metabat2",
-		maxbin2="{output_dir}/{sample}/binning/maxbin2",
-		concoct="{output_dir}/{sample}/binning/concoct"
+		metabat2=f"{OUTPUT_DIR}/{{sample}}/binning/metabat2",
+		maxbin2=f"{OUTPUT_DIR}/{{sample}}/binning/maxbin2",
+		concoct=f"{OUTPUT_DIR}/{{sample}}/binning/concoct"
 	output:
-		refined_bins=directory("{output_dir}/{sample}/bin_refinement")
+		refined_bins=directory(f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins")
 	params:
-		outdir="{output_dir}/{sample}/bin_refinement",
+		outdir=f"{OUTPUT_DIR}/{{sample}}/bin_refinement",
 		container=METAWRAP_CONTAINER,
 		completeness=50,
 		contamination=10
@@ -80,12 +80,11 @@ rule checkm2_quality:
 	Produces a quality report for all bins.
 	"""
 	input:
-		bin_refinement="{output_dir}/{sample}/bin_refinement"
+		bins_dir=f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins"
 	output:
-		report="{output_dir}/{sample}/checkm2/quality_report.tsv"
+		report=f"{OUTPUT_DIR}/{{sample}}/checkm2/quality_report.tsv"
 	params:
-		outdir="{output_dir}/{sample}/checkm2",
-		bins_dir="{output_dir}/{sample}/bin_refinement/metawrap_50_10_bins",
+		outdir=f"{OUTPUT_DIR}/{{sample}}/checkm2",
 		container=METAWRAP_CONTAINER
 	threads: config["threads"]
 	log: "logs/binning_checkm2_{sample}.log"
@@ -93,7 +92,7 @@ rule checkm2_quality:
 		"""
 		mkdir -p {params.outdir}
 		singularity exec {params.container} checkm2 predict \
-			--input {params.bins_dir} \
+			--input {input.bins_dir} \
 			--output-directory {params.outdir} \
 			--threads {threads} \
 			--extension .fa 2>> {log}

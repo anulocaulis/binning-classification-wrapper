@@ -11,3 +11,4 @@ qc/
 logs/
 slurm_logs/
 data/
+databases/

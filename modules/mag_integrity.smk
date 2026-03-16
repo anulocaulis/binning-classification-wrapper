@@ -6,11 +6,11 @@ rule gunc_assess_bins:
     Detects potential chimerism/contamination in refined bins with GUNC.
     """
     input:
-        bins_dir="{output_dir}/{sample}/bin_refinement/metawrap_50_10_bins"
+        bins_dir=f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins"
     output:
-        done="{output_dir}/{sample}/mag_integrity/gunc/gunc.done"
+        done=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/gunc/gunc.done"
     params:
-        outdir="{output_dir}/{sample}/mag_integrity/gunc",
+        outdir=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/gunc",
         container=CLASSIFICATION_CONTAINER,
         db_arg=lambda wildcards: ("--db_file " + config.get("gunc_db", "")) if config.get("gunc_db", "") else ""
     threads: config["threads"]
@@ -30,11 +30,11 @@ rule busco_assess_bins:
     Runs BUSCO on refined bins as a secondary conserved-gene completeness check.
     """
     input:
-        bins_dir="{output_dir}/{sample}/bin_refinement/metawrap_50_10_bins"
+        bins_dir=f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins"
     output:
-        done="{output_dir}/{sample}/mag_integrity/busco/busco.done"
+        done=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/busco/busco.done"
     params:
-        outdir="{output_dir}/{sample}/mag_integrity/busco",
+        outdir=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/busco",
         container=CLASSIFICATION_CONTAINER,
         lineage=lambda wildcards: config.get("busco", {}).get("lineage", "bacteria_odb10"),
         mode=lambda wildcards: config.get("busco", {}).get("mode", "genome")

@@ -6,11 +6,11 @@ rule prokka_annotate_bins:
     Annotates refined bins with Prokka to estimate functional gene content.
     """
     input:
-        bins_dir="{output_dir}/{sample}/bin_refinement/metawrap_50_10_bins"
+        bins_dir=f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins"
     output:
-        done="{output_dir}/{sample}/functional/prokka/prokka.done"
+        done=f"{OUTPUT_DIR}/{{sample}}/functional/prokka/prokka.done"
     params:
-        outdir="{output_dir}/{sample}/functional/prokka",
+        outdir=f"{OUTPUT_DIR}/{{sample}}/functional/prokka",
         container=CLASSIFICATION_CONTAINER,
         kingdom=lambda wildcards: config.get("prokka", {}).get("kingdom", "Bacteria")
     threads: config["threads"]

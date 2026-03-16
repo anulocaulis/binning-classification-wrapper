@@ -13,10 +13,10 @@ rule kraken2_classify:
     input:
         reads = lambda wildcards: config["input_reads"]["short_interleaved"].format(sample=wildcards.sample)
     output:
-        report = "{output_dir}/{sample}/classification/kraken2/report.txt",
-        output_file = "{output_dir}/{sample}/classification/kraken2/output.kraken"
+        report = f"{OUTPUT_DIR}/{{sample}}/classification/kraken2/report.txt",
+        output_file = f"{OUTPUT_DIR}/{{sample}}/classification/kraken2/output.kraken"
     params:
-        outdir = "{output_dir}/{sample}/classification/kraken2",
+        outdir = f"{OUTPUT_DIR}/{{sample}}/classification/kraken2",
         container = CLASSIFICATION_CONTAINER,
         db = config["kraken2_db"]
     threads: config["threads"]
@@ -41,12 +41,11 @@ rule gtdbtk_classify:
     GTDB reference database.
     """
     input:
-        bin_refinement = "{output_dir}/{sample}/bin_refinement"
+        bins_dir = f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins"
     output:
-        summary = "{output_dir}/{sample}/classification/gtdbtk/gtdbtk.bac120.summary.tsv"
+        summary = f"{OUTPUT_DIR}/{{sample}}/classification/gtdbtk/gtdbtk.bac120.summary.tsv"
     params:
-        outdir = "{output_dir}/{sample}/classification/gtdbtk",
-        bins_dir = "{output_dir}/{sample}/bin_refinement/metawrap_50_10_bins",
+        outdir = f"{OUTPUT_DIR}/{{sample}}/classification/gtdbtk",
         container = CLASSIFICATION_CONTAINER,
         db = config["gtdbtk_db"]
     threads: config["threads"]
@@ -55,7 +54,7 @@ rule gtdbtk_classify:
         """
         mkdir -p {params.outdir}
         singularity exec {params.container} gtdbtk classify_wf \
-            --genome_dir {params.bins_dir} \
+            --genome_dir {input.bins_dir} \
             --out_dir {params.outdir} \
             --cpus {threads} \
             --extension .fa \

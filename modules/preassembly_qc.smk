@@ -8,9 +8,9 @@ rule fastqc_short_reads:
     input:
         reads=lambda wildcards: config["input_reads"]["short_interleaved"].format(sample=wildcards.sample)
     output:
-        done="{output_dir}/{sample}/preassembly_qc/fastqc/fastqc.done"
+        done=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/fastqc/fastqc.done"
     params:
-        outdir="{output_dir}/{sample}/preassembly_qc/fastqc",
+        outdir=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/fastqc",
         container=QC_CONTAINER
     threads: config["threads"]
     log: "logs/preassembly_fastqc_{sample}.log"
@@ -32,9 +32,9 @@ rule nanoplot_long_reads:
     input:
         bam=lambda wildcards: config["input_reads"]["long_bam"].format(sample=wildcards.sample)
     output:
-        done="{output_dir}/{sample}/preassembly_qc/nanoplot/nanoplot.done"
+        done=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/nanoplot/nanoplot.done"
     params:
-        outdir="{output_dir}/{sample}/preassembly_qc/nanoplot",
+        outdir=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/nanoplot",
         container=QC_CONTAINER
     threads: config["threads"]
     log: "logs/preassembly_nanoplot_{sample}.log"
@@ -56,10 +56,10 @@ rule filtlong_long_reads:
     input:
         reads=lambda wildcards: config.get("ont_reads", config["input_reads"].get("long_fastq", "")).format(sample=wildcards.sample)
     output:
-        filtered="{output_dir}/{sample}/preassembly_qc/filtlong/filtered.fastq.gz",
-        stats="{output_dir}/{sample}/preassembly_qc/filtlong/filtlong.stats.txt"
+        filtered=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/filtlong/filtered.fastq.gz",
+        stats=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/filtlong/filtlong.stats.txt"
     params:
-        outdir="{output_dir}/{sample}/preassembly_qc/filtlong",
+        outdir=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/filtlong",
         container=QC_CONTAINER,
         min_length=lambda wildcards: config.get("filtlong", {}).get("min_length", 1000),
         min_mean_q=lambda wildcards: config.get("filtlong", {}).get("min_mean_q", 10)
