@@ -104,7 +104,10 @@ rule map_short_reads_to_assembly:
     shell:
         """
         mkdir -p {params.outdir} logs
-        singularity exec {params.container} bash -lc "set -euo pipefail; \
+        singularity exec {params.container} sh -c "set -euo pipefail; \
+            export PATH=/opt/conda/envs/qc_env/bin:/opt/conda/envs/base_tools/bin:/opt/conda/bin:$PATH; \
+            command -v minimap2 >/dev/null; \
+            command -v samtools >/dev/null; \
             minimap2 -t {threads} -ax sr {input.assembly} {input.reads} | \
             samtools sort -@ {threads} -o {output.bam}; \
             samtools index -@ {threads} {output.bam}" > {log} 2>&1
@@ -128,7 +131,9 @@ rule samtools_mapping_stats:
     shell:
         """
         mkdir -p logs
-        singularity exec {params.container} bash -lc "set -euo pipefail; \
+        singularity exec {params.container} sh -c "set -euo pipefail; \
+            export PATH=/opt/conda/envs/qc_env/bin:/opt/conda/envs/base_tools/bin:/opt/conda/bin:$PATH; \
+            command -v samtools >/dev/null; \
             samtools flagstat -@ {threads} {input.bam} > {output.flagstat}; \
             samtools idxstats {input.bam} > {output.idxstats}" > {log} 2>&1
         """

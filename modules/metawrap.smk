@@ -2,6 +2,10 @@
 # Snakemake module for metagenome-assembled genome (MAG) binning with MetaWRAP
 # Tools: MetaWRAP (MetaBAT2, MaxBin2, CONCOCT), bin refinement, CheckM2
 
+
+def metawrap_executable(_wildcards):
+	return config.get("metawrap_executable", "/usr/local/bin/metawrap")
+
 # ---
 # Step 1: MetaWRAP Binning (MetaBAT2, MaxBin2, CONCOCT)
 # ---
@@ -14,25 +18,36 @@ rule metawrap_binning:
 		assembly=lambda wildcards: config["input_reads"]["assembly"].format(sample=wildcards.sample),
 		reads=lambda wildcards: config["input_reads"]["short_interleaved"].format(sample=wildcards.sample)
 	output:
-		metabat2=directory(f"{OUTPUT_DIR}/{{sample}}/binning/metabat2"),
-		maxbin2=directory(f"{OUTPUT_DIR}/{{sample}}/binning/maxbin2"),
-		concoct=directory(f"{OUTPUT_DIR}/{{sample}}/binning/concoct")
+		metabat2=directory(f"{OUTPUT_DIR}/{{sample}}/binning/metabat2_bins"),
+		maxbin2=directory(f"{OUTPUT_DIR}/{{sample}}/binning/maxbin2_bins"),
+		concoct=directory(f"{OUTPUT_DIR}/{{sample}}/binning/concoct_bins")
 	params:
 		outdir=f"{OUTPUT_DIR}/{{sample}}/binning",
 		container=METAWRAP_CONTAINER,
+		metawrap_exec=metawrap_executable,
+		reads_mode=config.get("metawrap_reads_mode", "--interleaved"),
+		staged_reads=f"{OUTPUT_DIR}/{{sample}}/binning/.staged_reads/{{sample}}.interleaved.fastq",
 		min_contig_len=1000
 	threads: config["threads"]
 	log: "logs/binning_metawrap_{sample}.log"
 	shell:
 		"""
-		mkdir -p {params.outdir}
-		singularity exec {params.container} metawrap binning \
+		mkdir -p {params.outdir} $(dirname {params.staged_reads}) logs
+		READS={input.reads}
+		if [ "${{READS##*.}}" = "gz" ]; then
+			if [ ! -s {params.staged_reads} ]; then
+				gzip -dc "$READS" > {params.staged_reads}
+			fi
+			READS={params.staged_reads}
+		fi
+		singularity exec {params.container} {params.metawrap_exec} binning \
 			-o {params.outdir} \
 			-t {threads} \
 			-a {input.assembly} \
 			--metabat2 --maxbin2 --concoct \
+			{params.reads_mode} \
 			-l {params.min_contig_len} \
-			{input.reads} 2>> {log}
+			"$READS" 2>> {log}
 		"""
 
 
@@ -45,14 +60,15 @@ rule metawrap_bin_refinement:
 	bin_refinement module. Produces a high-quality, non-redundant bin set.
 	"""
 	input:
-		metabat2=f"{OUTPUT_DIR}/{{sample}}/binning/metabat2",
-		maxbin2=f"{OUTPUT_DIR}/{{sample}}/binning/maxbin2",
-		concoct=f"{OUTPUT_DIR}/{{sample}}/binning/concoct"
+		metabat2=f"{OUTPUT_DIR}/{{sample}}/binning/metabat2_bins",
+		maxbin2=f"{OUTPUT_DIR}/{{sample}}/binning/maxbin2_bins",
+		concoct=f"{OUTPUT_DIR}/{{sample}}/binning/concoct_bins"
 	output:
 		refined_bins=directory(f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins")
 	params:
 		outdir=f"{OUTPUT_DIR}/{{sample}}/bin_refinement",
 		container=METAWRAP_CONTAINER,
+		metawrap_exec=metawrap_executable,
 		completeness=50,
 		contamination=10
 	threads: config["threads"]
@@ -60,7 +76,7 @@ rule metawrap_bin_refinement:
 	shell:
 		"""
 		mkdir -p {params.outdir}
-		singularity exec {params.container} metawrap bin_refinement \
+		singularity exec {params.container} {params.metawrap_exec} bin_refinement \
 			-o {params.outdir} \
 			-t {threads} \
 			-A {input.metabat2} \
@@ -97,3 +113,41 @@ rule checkm2_quality:
 			--threads {threads} \
 			--extension .fa 2>> {log}
 		"""
+
+
+# ---
+# Step 4: MetaWRAP Blobology (GC + Coverage visualization)
+# ---
+rule metawrap_blobology:
+	"""
+	Runs MetaWRAP's blobology module to visualize bin quality via GC content
+	and coverage plots. Requires split (non-interleaved) R1/R2 FASTQ files.
+	"""
+	input:
+		assembly=lambda wildcards: config["input_reads"]["assembly"].format(sample=wildcards.sample),
+		r1=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/split_reads/{{sample}}_R1.fastq.gz",
+		r2=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/split_reads/{{sample}}_R2.fastq.gz",
+		bins=f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins"
+	output:
+		blobplot=f"{OUTPUT_DIR}/{{sample}}/blobology/blobplot.pdf",
+		stats=f"{OUTPUT_DIR}/{{sample}}/blobology/blobology.stats.txt"
+	params:
+		outdir=f"{OUTPUT_DIR}/{{sample}}/blobology",
+		container=METAWRAP_CONTAINER,
+		metawrap_exec=metawrap_executable
+	threads: config["threads"]
+	log: "logs/blobology_{sample}.log"
+	shell:
+		"""
+		mkdir -p {params.outdir} logs
+		singularity exec {params.container} {params.metawrap_exec} blobology \
+			-a {input.assembly} \
+			-o {params.outdir} \
+			-t {threads} \
+			--bins {input.bins} \
+			{input.r1} {input.r2} 2>> {log}
+		touch {output.stats}
+		"""
+
+
+# Additional MetaWRAP rules can be added here as needed

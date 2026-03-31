@@ -1,8 +1,13 @@
 # Configuration file for Metagenomic Binning and Classification Wrapper
 
-# TEST MODE - Set to True to only run on S5 (has both long and short reads)
-# Set to False to run all samples configured below
-test_mode: False
+# TEST MODE - Set to True to constrain run to one sample and one assembly type.
+# This only affects selection in Snakefile (samples/assembly types), not rule logic.
+test_mode: True
+test_sample: "S1"
+test_assembly_types:
+  - sr
+test_comparison_samples:
+  - S1
 
 # Data directory (absolute path) - organized by sample
 data_dir: "/storage/biology/projects/miller-lowry/beitner/data"
@@ -32,8 +37,18 @@ input_reads:
 # Prebuilt standard DB unpacked from k2_standard_20240112.tar.gz
 kraken2_db: "/storage/biology/projects/miller-lowry/beitner/databases/k2_standard"
 
+# Optional fallback directories checked if kraken2_db is missing required files.
+kraken2_db_fallbacks:
+  - "/storage/biology/projects/miller-lowry/beitner/databases/kraken2_db"
+
 # Path to GTDB-Tk database (for bin taxonomic classification)
 gtdbtk_db: "/storage/biology/projects/miller-lowry/beitner/databases/gtdbtk_db"
+
+# Optional explicit path to MetaWRAP CLI inside the metawrap container.
+metawrap_executable: "/usr/local/bin/metawrap"
+
+# MetaWRAP read mode for input_reads.short_interleaved.
+metawrap_reads_mode: "--interleaved"
 
 # ---
 # Assembly comparison settings (SR/LR/Hybrid)
@@ -65,6 +80,13 @@ assembly_eval:
   offline: true
   extra_args: ""
 
+# Nonpareil options for assembly evaluation
+nonpareil:
+  input_mode: "reads"
+  algorithm: "kmer"
+  format: "fastq"
+  extra_args: ""
+
 # Curated MAG FASTAs to aggregate into a single reference for future MetaQUAST runs
 # Leave empty for now; this path is not called by rule all.
 best_mag_reference_inputs: []
@@ -80,3 +102,10 @@ busco:
 # Prokka options
 prokka:
   kingdom: "Bacteria"
+
+# MultiQC options
+multiqc:
+  title: "Binning Classification Workflow"
+  comment: "Consolidated QC and analysis summary"
+  # Optional extra CLI args passed to multiqc (example: "--ignore \"*tmp*\" --quiet")
+  extra_args: ""

@@ -1,6 +1,41 @@
 # modules/preassembly_qc.smk
 # Pre-assembly quality control for Illumina and ONT inputs
 
+rule split_interleaved_reads:
+	"""
+	Splits interleaved FASTQ (R1/R2 alternating) into separate R1 and R2 files.
+	Useful for tools that require explicit pair separation (e.g., metawrap blobology).
+	"""
+	input:
+		interleaved=lambda wildcards: config["input_reads"]["short_interleaved"].format(sample=wildcards.sample)
+	output:
+		r1=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/split_reads/{{sample}}_R1.fastq.gz",
+		r2=f"{OUTPUT_DIR}/{{sample}}/preassembly_qc/split_reads/{{sample}}_R2.fastq.gz"
+	log: "logs/split_reads_{sample}.log"
+	shell:
+		"""
+		mkdir -p $(dirname {output.r1}) logs
+		if [ "${{{{input.interleaved##*.}}}}" = "gz" ]; then
+			# Decompress, split, and re-compress
+			gzip -dc {input.interleaved} | \
+			awk 'NR%8==1 {{print > "$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq"; next}} \
+			     NR%8==5 {{print > "$(dirname {output.r1})/{wildcards.sample}_R2.tmp.fastq"; next}} \
+			     {{print >> prevfile}}' \
+			     prevfile="$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq" 2>> {log}
+		else
+			# Split uncompressed
+			awk 'NR%8==1 {{print > "$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq"; next}} \
+			     NR%8==5 {{print > "$(dirname {output.r1})/{wildcards.sample}_R2.tmp.fastq"; next}} \
+			     {{print >> prevfile}}' \
+			     prevfile="$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq" \
+			     {input.interleaved} 2>> {log}
+		fi
+		gzip -f $(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq 2>> {log}
+		gzip -f $(dirname {output.r1})/{wildcards.sample}_R2.tmp.fastq 2>> {log}
+		mv $(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq.gz {output.r1} 2>> {log}
+		mv $(dirname {output.r1})/{wildcards.sample}_R2.tmp.fastq.gz {output.r2} 2>> {log}
+		"""
+
 rule fastqc_short_reads:
     """
     Runs FastQC on interleaved short-read FASTQ input.

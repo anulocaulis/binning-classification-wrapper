@@ -1,0 +1,16 @@
+Bootstrap: docker
+From: quay.io/biocontainers/nonpareil:3.5.5--r44h077b44d_2
+
+%labels
+Maintainer lowry-nitrogen-team
+Description Singularity container for Nonpareil from quay.io/biocontainers/nonpareil
+
+%help
+This container wraps the BioContainers Nonpareil image.
+
+Examples:
+  singularity exec containers/nonpareil.sif nonpareil -h
+  singularity shell containers/nonpareil.sif
+
+%runscript
+exec "$@"

@@ -27,12 +27,12 @@ From: continuumio/miniconda3:latest
     /opt/conda/bin/conda create -n metawrap -y
 
     # 3. Activate environment and install MetaWRAP and dependencies
-    # REMOVED metawrap=1.3.2 pin. Install the latest stable version.
+    # Use bioconda's metawrap-mg package (the metagenomics pipeline), not conda-forge metawrap (python decorator utility).
     /opt/conda/bin/conda run -n metawrap conda install \
-        --channel conda-forge \
         --channel bioconda \
+        --channel conda-forge \
         --override-channels \
-        metawrap \
+        metawrap-mg \
         maxbin2 \
         metabat2 \
         concoct \
@@ -40,12 +40,15 @@ From: continuumio/miniconda3:latest
         gtdbtk \
         -y
 
+    # 3b. Publish a stable executable path for workflow calls.
+    ln -sf /opt/conda/envs/metawrap/bin/metawrap /usr/local/bin/metawrap
+
     # 4. Clean up Conda caches to minimize final image size
     /opt/conda/bin/conda clean -a -y
 
 %runscript
     # The default command when running the container (exec / run)
-    exec /opt/conda/envs/metawrap/bin/metawrap "$@"
+    exec /usr/local/bin/metawrap "$@"
 
 %labels
 Maintainer lowry-nitrogen-team

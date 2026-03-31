@@ -2,6 +2,25 @@
 # Snakemake module for taxonomic classification of reads and MAGs
 # Tools: Kraken2 (read classification), GTDB-Tk (bin classification)
 
+import os
+
+
+def resolve_kraken2_db():
+    configured = config.get("kraken2_db", "")
+    candidates = [configured]
+
+    if configured.endswith("/kraken2_db"):
+        candidates.append(configured[:-len("/kraken2_db")] + "/k2_standard")
+
+    for candidate in config.get("kraken2_db_fallbacks", []):
+        candidates.append(candidate)
+
+    for db in candidates:
+        if db and all(os.path.exists(os.path.join(db, f)) for f in ("hash.k2d", "taxo.k2d", "opts.k2d")):
+            return db
+
+    return configured
+
 # ---
 # Step 1: Kraken2 Read Classification
 # ---
@@ -18,13 +37,16 @@ rule kraken2_classify:
     params:
         outdir = f"{OUTPUT_DIR}/{{sample}}/classification/kraken2",
         container = CLASSIFICATION_CONTAINER,
-        db = config["kraken2_db"]
+        db = resolve_kraken2_db()
     threads: config["threads"]
     log: "logs/classification_kraken2_{sample}.log"
     shell:
         """
         mkdir -p {params.outdir}
-        singularity exec {params.container} kraken2 \
+        test -f {params.db}/hash.k2d
+        test -f {params.db}/taxo.k2d
+        test -f {params.db}/opts.k2d
+        singularity exec {params.container} /opt/conda/envs/base_tools/bin/kraken2 \
             --db {params.db} \
             --threads {threads} \
             --report {output.report} \
