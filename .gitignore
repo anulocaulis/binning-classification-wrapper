@@ -12,3 +12,4 @@ logs/
 slurm_logs/
 data/
 databases/
+busco_downloads/

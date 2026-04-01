@@ -12,17 +12,19 @@ rule prokka_annotate_bins:
     params:
         outdir=f"{OUTPUT_DIR}/{{sample}}/functional/prokka",
         container=CLASSIFICATION_CONTAINER,
+        executable="/opt/conda/envs/base_tools/bin/prokka",
         kingdom=lambda wildcards: config.get("prokka", {}).get("kingdom", "Bacteria")
     threads: config["threads"]
     log: "logs/functional_prokka_{sample}.log"
     shell:
         """
         mkdir -p {params.outdir} logs
-        singularity exec {params.container} bash -lc "set -euo pipefail; \
-            for f in {input.bins_dir}/*.fa; do \
-                name=$(basename \"$f\" .fa); \
-                prokka --outdir {params.outdir}/$name --prefix $name \
-                    --cpus {threads} --kingdom {params.kingdom} \"$f\"; \
-            done" > {log} 2>&1
+        : > {log}
+        for f in {input.bins_dir}/*.fa; do
+            name=$(basename "$f" .fa)
+            singularity exec {params.container} {params.executable} \
+                --outdir {params.outdir}/"$name" --prefix "$name" \
+                --cpus {threads} --kingdom {params.kingdom} "$f" >> {log} 2>&1
+        done
         touch {output.done}
         """

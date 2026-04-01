@@ -15,21 +15,19 @@ rule split_interleaved_reads:
 	shell:
 		"""
 		mkdir -p $(dirname {output.r1}) logs
-		if [ "${{{{input.interleaved##*.}}}}" = "gz" ]; then
-			# Decompress, split, and re-compress
-			gzip -dc {input.interleaved} | \
-			awk 'NR%8==1 {{print > "$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq"; next}} \
-			     NR%8==5 {{print > "$(dirname {output.r1})/{wildcards.sample}_R2.tmp.fastq"; next}} \
-			     {{print >> prevfile}}' \
-			     prevfile="$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq" 2>> {log}
-		else
-			# Split uncompressed
-			awk 'NR%8==1 {{print > "$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq"; next}} \
-			     NR%8==5 {{print > "$(dirname {output.r1})/{wildcards.sample}_R2.tmp.fastq"; next}} \
-			     {{print >> prevfile}}' \
-			     prevfile="$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq" \
-			     {input.interleaved} 2>> {log}
-		fi
+        R1_TMP=$(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq
+        R2_TMP=$(dirname {output.r1})/{wildcards.sample}_R2.tmp.fastq
+        if [[ "{input.interleaved}" == *.gz ]]; then
+            gzip -dc {input.interleaved} | awk -v r1="$R1_TMP" -v r2="$R2_TMP" '{{
+                m=(NR-1)%8;
+                if (m<4) print > r1; else print > r2;
+            }}' 2>> {log}
+        else
+            awk -v r1="$R1_TMP" -v r2="$R2_TMP" '{{
+                m=(NR-1)%8;
+                if (m<4) print > r1; else print > r2;
+            }}' {input.interleaved} 2>> {log}
+        fi
 		gzip -f $(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq 2>> {log}
 		gzip -f $(dirname {output.r1})/{wildcards.sample}_R2.tmp.fastq 2>> {log}
 		mv $(dirname {output.r1})/{wildcards.sample}_R1.tmp.fastq.gz {output.r1} 2>> {log}

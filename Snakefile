@@ -1,10 +1,16 @@
 
+import functools
+import os
+import shutil
+import subprocess
+
 configfile: "config.yaml"
 
 METAWRAP_CONTAINER = "containers/metawrap.sif"
 QC_CONTAINER = "containers/multi_qc.sif"
 BINNING_CONTAINER = "containers/metawrap.sif"
 CLASSIFICATION_CONTAINER = "containers/qc_binning_annotation.sif"
+CLASSIFICATION_GTD_GUNC_CONTAINER = "containers/classification.sif"
 NONPAREIL_CONTAINER = "containers/nonpareil.sif"
 
 ALL_SAMPLES = config["all_samples"]
@@ -12,6 +18,32 @@ LONG_READ_SAMPLES = config.get("long_read_samples", [])
 ASSEMBLY_TYPES = config.get("assembly_types", ["sr"])
 COMPARE_SAMPLES = config.get("comparison_samples", LONG_READ_SAMPLES)
 OUTPUT_DIR = config["output_dir"]
+
+
+@functools.lru_cache(maxsize=None)
+def container_has_executable(container, executable):
+    runtime = shutil.which("singularity") or shutil.which("apptainer")
+    if runtime is None or not os.path.exists(container):
+        return False
+
+    result = subprocess.run(
+        [runtime, "exec", container, "sh", "-c", f"command -v {executable} >/dev/null 2>&1"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return result.returncode == 0
+
+
+GTDBTK_ENABLED = bool(config.get("gtdbtk_db")) and os.path.exists(config["gtdbtk_db"]) and container_has_executable(
+    CLASSIFICATION_GTD_GUNC_CONTAINER, "gtdbtk"
+)
+CHECKM2_ENABLED = bool(config.get("checkm2_db")) and os.path.exists(config["checkm2_db"])
+GUNC_ENABLED = bool(config.get("gunc_db")) and os.path.exists(config["gunc_db"]) and container_has_executable(
+    CLASSIFICATION_GTD_GUNC_CONTAINER, "gunc"
+)
+BLOBOLOGY_NT_DB = config.get("blobology_nt_db", "/home/beitnerm/NCBI_NT_DB/nt.00.nhd")
+BLOBOLOGY_ENABLED = os.path.exists(BLOBOLOGY_NT_DB)
 
 if config.get("test_mode", False):
     test_sample = config.get("test_sample", ALL_SAMPLES[0] if ALL_SAMPLES else None)
@@ -32,18 +64,28 @@ BASE_TARGETS = [
     *expand(f"{OUTPUT_DIR}/{{sample}}/binning/maxbin2_bins", sample=ALL_SAMPLES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/binning/concoct_bins", sample=ALL_SAMPLES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins", sample=ALL_SAMPLES),
-    *expand(f"{OUTPUT_DIR}/{{sample}}/checkm2/quality_report.tsv", sample=ALL_SAMPLES),
-    *expand(f"{OUTPUT_DIR}/{{sample}}/blobology/blobplot.pdf", sample=ALL_SAMPLES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/classification/kraken2/report.txt", sample=ALL_SAMPLES),
-    *expand(f"{OUTPUT_DIR}/{{sample}}/classification/gtdbtk/gtdbtk.bac120.summary.tsv", sample=ALL_SAMPLES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/assembly_eval/{{assembly_type}}/metaquast/report.tsv", sample=COMPARE_SAMPLES, assembly_type=ASSEMBLY_TYPES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/assembly_eval/{{assembly_type}}/nonpareil/nonpareil.done", sample=COMPARE_SAMPLES, assembly_type=ASSEMBLY_TYPES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/assembly_eval/{{assembly_type}}/mapping/flagstat.txt", sample=COMPARE_SAMPLES, assembly_type=ASSEMBLY_TYPES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/assembly_eval/{{assembly_type}}/mapping/idxstats.txt", sample=COMPARE_SAMPLES, assembly_type=ASSEMBLY_TYPES),
-    *expand(f"{OUTPUT_DIR}/{{sample}}/mag_integrity/gunc/gunc.done", sample=ALL_SAMPLES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/mag_integrity/busco/busco.done", sample=ALL_SAMPLES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/functional/prokka/prokka.done", sample=ALL_SAMPLES),
 ]
+
+if CHECKM2_ENABLED:
+    BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/checkm2/quality_report.tsv", sample=ALL_SAMPLES))
+
+if BLOBOLOGY_ENABLED:
+    BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/blobology/blobplot.pdf", sample=ALL_SAMPLES))
+
+if GTDBTK_ENABLED:
+    BASE_TARGETS.extend(
+        expand(f"{OUTPUT_DIR}/{{sample}}/classification/gtdbtk/gtdbtk.bac120.summary.tsv", sample=ALL_SAMPLES)
+    )
+
+if GUNC_ENABLED:
+    BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/mag_integrity/gunc/gunc.done", sample=ALL_SAMPLES))
 
 rule all:
     input:

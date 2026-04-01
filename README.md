@@ -143,6 +143,14 @@ https://benlangmead.github.io/aws-indexes/k2
 
 Download and point `gtdbtk_db` in `config.yaml` to the unpacked directory.
 
+The workflow only includes GTDB-Tk targets when both the configured database path exists and a `gtdbtk` executable is present in one of the configured containers.
+
+### CheckM2
+
+CheckM2 requires its DIAMOND database to be downloaded separately. Point `checkm2_db` in `config.yaml` at the downloaded `.dmnd` file.
+
+If `checkm2_db` is empty or missing, the CheckM2 target is skipped from `rule all`.
+
 ### GUNC (optional)
 
 **Database**: PROGENOMES2 (UniRef100-based)
@@ -151,6 +159,14 @@ Download and point `gtdbtk_db` in `config.yaml` to the unpacked directory.
 - **Configuration**: Leave `gunc_db: ""` in `config.yaml` to skip this rule
 
 If used, set `gunc_db` to the unpacked database directory.
+
+If `gunc_db` is left empty, the workflow skips the GUNC target.
+
+### MetaWRAP blobology database
+
+MetaWRAP blobology requires an `nt` database index file. By default the workflow checks for `/home/beitnerm/NCBI_NT_DB/nt.00.nhd`.
+
+You can override that path with `blobology_nt_db` in `config.yaml`. If the file is absent, the blobology target is skipped from `rule all`.
 
 ---
 

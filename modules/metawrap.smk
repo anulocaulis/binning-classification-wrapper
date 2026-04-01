@@ -76,14 +76,28 @@ rule metawrap_bin_refinement:
 	shell:
 		"""
 		mkdir -p {params.outdir}
-		singularity exec {params.container} {params.metawrap_exec} bin_refinement \
-			-o {params.outdir} \
-			-t {threads} \
-			-A {input.metabat2} \
-			-B {input.maxbin2} \
-			-C {input.concoct} \
-			-c {params.completeness} \
-			-x {params.contamination} 2>> {log}
+		singularity exec {params.container} sh -c "set -euo pipefail; \
+			{params.metawrap_exec} bin_refinement \
+				-o {params.outdir} \
+				-t {threads} \
+				-A {input.metabat2} \
+				-B {input.maxbin2} \
+				-C {input.concoct} \
+				--skip-checkm \
+				-c {params.completeness} \
+				-x {params.contamination}" 2>> {log}
+
+		# MetaWRAP does not create binsO when --skip-checkm is used.
+		# Normalize successful output into the expected Snakemake target path.
+		if [ -d "{params.outdir}/binsO" ]; then
+			[ ! -d "{output.refined_bins}" ] && mv "{params.outdir}/binsO" "{output.refined_bins}"
+		elif [ -d "{params.outdir}/work_files/binsBC" ]; then
+			rm -rf "{output.refined_bins}"
+			cp -r "{params.outdir}/work_files/binsBC" "{output.refined_bins}"
+		else
+			echo "No refined bin directory found (expected binsO or work_files/binsBC)." >&2
+			exit 1
+		fi
 		"""
 
 
@@ -101,16 +115,23 @@ rule checkm2_quality:
 		report=f"{OUTPUT_DIR}/{{sample}}/checkm2/quality_report.tsv"
 	params:
 		outdir=f"{OUTPUT_DIR}/{{sample}}/checkm2",
-		container=METAWRAP_CONTAINER
+		container=CLASSIFICATION_CONTAINER,
+		executable="/opt/conda/envs/checkm2/bin/checkm2",
+		database=lambda wildcards: config.get("checkm2_db", "")
 	threads: config["threads"]
 	log: "logs/binning_checkm2_{sample}.log"
 	shell:
 		"""
 		mkdir -p {params.outdir}
-		singularity exec {params.container} checkm2 predict \
+		if [ -z "{params.database}" ] || [ ! -e {params.database} ]; then
+			echo "CheckM2 requires config.checkm2_db to point at a downloaded DIAMOND database file." >&2
+			exit 1
+		fi
+		singularity exec {params.container} {params.executable} predict \
 			--input {input.bins_dir} \
 			--output-directory {params.outdir} \
 			--threads {threads} \
+			--database_path {params.database} \
 			--extension .fa 2>> {log}
 		"""
 
@@ -134,12 +155,17 @@ rule metawrap_blobology:
 	params:
 		outdir=f"{OUTPUT_DIR}/{{sample}}/blobology",
 		container=METAWRAP_CONTAINER,
-		metawrap_exec=metawrap_executable
+		metawrap_exec=metawrap_executable,
+		nt_db=lambda wildcards: config.get("blobology_nt_db", "/home/beitnerm/NCBI_NT_DB/nt.00.nhd")
 	threads: config["threads"]
 	log: "logs/blobology_{sample}.log"
 	shell:
 		"""
 		mkdir -p {params.outdir} logs
+		if [ ! -f {params.nt_db} ]; then
+			echo "MetaWRAP blobology requires the nt database file at {params.nt_db}." >&2
+			exit 1
+		fi
 		singularity exec {params.container} {params.metawrap_exec} blobology \
 			-a {input.assembly} \
 			-o {params.outdir} \

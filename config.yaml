@@ -44,6 +44,10 @@ kraken2_db_fallbacks:
 # Path to GTDB-Tk database (for bin taxonomic classification)
 gtdbtk_db: "/storage/biology/projects/miller-lowry/beitner/databases/gtdbtk_db"
 
+# Path to the CheckM2 DIAMOND database file (for MAG quality scoring).
+# Leave empty to skip the CheckM2 target until the database is downloaded.
+checkm2_db: ""
+
 # Optional explicit path to MetaWRAP CLI inside the metawrap container.
 metawrap_executable: "/usr/local/bin/metawrap"
 

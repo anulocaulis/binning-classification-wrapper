@@ -46,12 +46,18 @@ rule kraken2_classify:
         test -f {params.db}/hash.k2d
         test -f {params.db}/taxo.k2d
         test -f {params.db}/opts.k2d
+        set +e
         singularity exec {params.container} /opt/conda/envs/base_tools/bin/kraken2 \
             --db {params.db} \
             --threads {threads} \
             --report {output.report} \
             --output {output.output_file} \
             {input.reads} 2>> {log}
+        status=$?
+        set -e
+        if [ "$status" -ne 0 ] && [ ! -s {output.report} -o ! -s {output.output_file} ]; then
+            exit "$status"
+        fi
         """
 
 # ---
@@ -68,13 +74,14 @@ rule gtdbtk_classify:
         summary = f"{OUTPUT_DIR}/{{sample}}/classification/gtdbtk/gtdbtk.bac120.summary.tsv"
     params:
         outdir = f"{OUTPUT_DIR}/{{sample}}/classification/gtdbtk",
-        container = CLASSIFICATION_CONTAINER,
+        container = CLASSIFICATION_GTD_GUNC_CONTAINER,
         db = config["gtdbtk_db"]
     threads: config["threads"]
     log: "logs/classification_gtdbtk_{sample}.log"
     shell:
         """
         mkdir -p {params.outdir}
+        singularity exec {params.container} sh -c "command -v gtdbtk >/dev/null 2>&1" 2>> {log}
         singularity exec {params.container} gtdbtk classify_wf \
             --genome_dir {input.bins_dir} \
             --out_dir {params.outdir} \
