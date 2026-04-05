@@ -1,6 +1,29 @@
 # modules/preassembly_qc.smk
 # Pre-assembly quality control for Illumina and ONT inputs
 
+CLEAN_DATA_DIR = config.get("clean_data_dir", "/storage/biology/projects/miller-lowry/beitner/data/clean_data")
+CLEAN_READS_SOURCE = config.get(
+    "clean_reads_source",
+    "/storage/biology/projects/miller-lowry/beitner/metagenomic-multi-assembly-wrapper/trimmed_reads/{sample}_interleaved_trimmed_polyG_filtered.fastq.gz",
+)
+
+
+rule stage_clean_interleaved_reads:
+    """
+    Copies cleaned interleaved reads from the upstream wrapper output into a
+    stable local path used by downstream binning rules.
+    """
+    input:
+        source=lambda wildcards: CLEAN_READS_SOURCE.format(sample=wildcards.sample)
+    output:
+        staged=f"{CLEAN_DATA_DIR}/{{sample}}_interleaved_trimmed_polyG_filtered.fastq.gz"
+    log: "logs/stage_clean_reads_{sample}.log"
+    shell:
+        """
+        mkdir -p $(dirname {output.staged}) logs
+        cp -f {input.source} {output.staged} > {log} 2>&1
+        """
+
 rule split_interleaved_reads:
 	"""
 	Splits interleaved FASTQ (R1/R2 alternating) into separate R1 and R2 files.

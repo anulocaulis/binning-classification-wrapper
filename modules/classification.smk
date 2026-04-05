@@ -81,11 +81,13 @@ rule gtdbtk_classify:
     shell:
         """
         mkdir -p {params.outdir}
+        test -d {params.db}
         singularity exec {params.container} sh -c "command -v gtdbtk >/dev/null 2>&1" 2>> {log}
-        singularity exec {params.container} gtdbtk classify_wf \
-            --genome_dir {input.bins_dir} \
-            --out_dir {params.outdir} \
-            --cpus {threads} \
-            --extension .fa \
-            --skip_ani_screen 2>> {log}
+        singularity exec {params.container} sh -c "export GTDBTK_DATA_PATH={params.db}; \
+            gtdbtk classify_wf \
+                --genome_dir {input.bins_dir} \
+                --out_dir {params.outdir} \
+                --cpus {threads} \
+                --extension .fa \
+                --skip_ani_screen" 2>> {log}
         """

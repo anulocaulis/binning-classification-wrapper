@@ -1,0 +1,102 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+
+# To build this container image, use the command below:
+# sudo singularity build classification.sif classification.def
+
+
+%environment
+	export LC_ALL=C
+	export PATH="/opt/conda/bin:/usr/local/bin:/usr/bin:$PATH"
+
+%post
+	export DEBIAN_FRONTEND=noninteractive
+	export TZ=Etc/UTC
+
+	# Update and install core system dependencies
+	apt-get update -y
+	apt-get install -y --no-install-recommends \
+		build-essential \
+		wget \
+		git \
+		curl \
+		bzip2 \
+		ca-certificates \
+		tzdata \
+		python3 \
+		python3-pip \
+		perl \
+		openjdk-17-jre-headless
+
+	ln -fs /usr/share/zoneinfo/$TZ /etc/localtime
+	echo $TZ > /etc/timezone
+	dpkg-reconfigure -f noninteractive tzdata
+
+	# Install Miniforge (conda-forge based) to avoid Anaconda ToS channel prompts
+	curl -sSL https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -o /tmp/miniforge.sh
+	bash /tmp/miniforge.sh -b -p /opt/conda
+	rm -f /tmp/miniforge.sh
+	export PATH="/usr/local/bin:/usr/bin:/opt/conda/bin:$PATH"
+
+	conda config --system --remove-key channels || true
+	conda config --system --prepend channels conda-forge
+	conda config --system --append channels bioconda
+	conda config --system --set channel_priority strict
+	conda install -y \
+		gtdbtk \
+		gunc
+
+	# Create convenience symlinks for key command entrypoints
+	ln -sf "$(command -v gtdbtk)" /usr/local/bin/gtdbtk
+	ln -sf "$(command -v gunc)" /usr/local/bin/gunc
+
+	apt-get clean
+	rm -rf /var/lib/apt/lists/*
+	conda clean -a -y
+
+%runscript
+	echo "==================================================================="
+	echo "This container includes classification tools:"
+	echo "  - gtdbtk"
+	echo "  - gunc"
+	echo "-------------------------------------------------------------------"
+	echo "To inspect tool help, use the 'exec' command:"
+	echo "singularity exec classification.sif gtdbtk --help"
+	echo "singularity exec classification.sif gunc --help"
+	echo "==================================================================="
+
+	# Execute the command passed by the user
+	exec "$@"
+
+%labels
+	Maintainer lowry-nitrogen-team
+	CreationDate 2026-04-01
+	Version 1.0-classification
+	Description Singularity container with GTDB-Tk and GUNC for genome classification and contamination-aware QC
+
+
+%help
+This Apptainer (Singularity) container provides genome classification and
+contamination-aware quality control tooling.
+
+Installed primary tools:
+- GTDB-Tk (gtdbtk)
+- GUNC (gunc)
+
+USAGE:
+Run either tool with singularity exec:
+
+singularity exec classification.sif gtdbtk --help
+singularity exec classification.sif gunc --help
+
+Example skeleton command (GTDB-Tk classify workflow):
+singularity exec classification.sif gtdbtk classify_wf \
+  --genome_dir genomes \
+  --out_dir gtdbtk_out \
+  --cpus 8
+
+Example skeleton command (GUNC run):
+singularity exec classification.sif gunc run \
+  --input_file genome.fna \
+  --out_dir gunc_out

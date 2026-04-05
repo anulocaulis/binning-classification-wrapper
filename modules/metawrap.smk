@@ -2,6 +2,8 @@
 # Snakemake module for metagenome-assembled genome (MAG) binning with MetaWRAP
 # Tools: MetaWRAP (MetaBAT2, MaxBin2, CONCOCT), bin refinement, CheckM2
 
+CLEAN_DATA_DIR = config.get("clean_data_dir", "/storage/biology/projects/miller-lowry/beitner/data/clean_data")
+
 
 def metawrap_executable(_wildcards):
 	return config.get("metawrap_executable", "/usr/local/bin/metawrap")
@@ -16,7 +18,7 @@ rule metawrap_binning:
 	"""
 	input:
 		assembly=lambda wildcards: config["input_reads"]["assembly"].format(sample=wildcards.sample),
-		reads=lambda wildcards: config["input_reads"]["short_interleaved"].format(sample=wildcards.sample)
+		reads=f"{CLEAN_DATA_DIR}/{{sample}}_interleaved_trimmed_polyG_filtered.fastq.gz"
 	output:
 		metabat2=directory(f"{OUTPUT_DIR}/{{sample}}/binning/metabat2_bins"),
 		maxbin2=directory(f"{OUTPUT_DIR}/{{sample}}/binning/maxbin2_bins"),

@@ -54,6 +54,10 @@ metawrap_executable: "/usr/local/bin/metawrap"
 # MetaWRAP read mode for input_reads.short_interleaved.
 metawrap_reads_mode: "--interleaved"
 
+# Cleaned interleaved reads staged for MetaWRAP binning.
+clean_data_dir: "/storage/biology/projects/miller-lowry/beitner/data/clean_data"
+clean_reads_source: "/storage/biology/projects/miller-lowry/beitner/metagenomic-multi-assembly-wrapper/trimmed_reads/{sample}_interleaved_trimmed_polyG_filtered.fastq.gz"
+
 # ---
 # Assembly comparison settings (SR/LR/Hybrid)
 # comparison_samples defaults to long_read_samples when omitted
