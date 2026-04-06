@@ -45,8 +45,7 @@ kraken2_db_fallbacks:
 gtdbtk_db: "/storage/biology/projects/miller-lowry/beitner/databases/gtdbtk_db"
 
 # Path to the CheckM2 DIAMOND database file (for MAG quality scoring).
-# Leave empty to skip the CheckM2 target until the database is downloaded.
-checkm2_db: ""
+checkm2_db: "/storage/biology/projects/miller-lowry/beitner/databases/CheckM2_database/uniref100.KO.1.dmnd"
 
 # Optional explicit path to MetaWRAP CLI inside the metawrap container.
 metawrap_executable: "/usr/local/bin/metawrap"
@@ -100,7 +99,15 @@ nonpareil:
 best_mag_reference_inputs: []
 
 # GUNC database (optional, but recommended)
-gunc_db: ""
+gunc_db: "/storage/biology/projects/miller-lowry/beitner/databases/gunc_db/gunc_db_progenomes2.1.dmnd"
+
+# MAGqual (optional): native MIMAG labeling with Bakta + CheckM inside magqual.sif
+magqual:
+  # Optional but recommended: set to a shared Bakta DB (v5+) directory to avoid per-run downloads.
+  # Leave empty to let MAGqual download/use its own Bakta light DB inside the MAGqual output directory.
+  bakta_db: "/storage/biology/projects/miller-lowry/beitner/databases/bakta_db"
+  # Optional CheckM database directory for MAGqual's internal CheckM step.
+  checkm_db: ""
 
 # BUSCO options
 busco:

@@ -60,3 +60,62 @@ rule busco_assess_bins:
         done
         touch {output.done}
         """
+
+
+rule magqual_label_mimag:
+    """
+    Runs MAGqual independently to produce native MIMAG labeling for refined bins.
+    """
+    input:
+        bins_dir=f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins",
+        assembly=lambda wildcards: config["input_reads"]["assembly"].format(sample=wildcards.sample)
+    output:
+        labels=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual/analysis/genome_bins/{{sample}}_qual_MAGs.txt",
+        done=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual/mimag.done"
+    params:
+        outdir=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual",
+        container=MAGQUAL_CONTAINER,
+        bakta_db=lambda wildcards: config.get("magqual", {}).get("bakta_db", ""),
+        checkm_db=lambda wildcards: config.get("magqual", {}).get("checkm_db", "")
+    threads: config["threads"]
+    log: "logs/mag_integrity_magqual_{sample}.log"
+    shell:
+        """
+        mkdir -p {params.outdir} logs
+        : > {log}
+
+        container_abs=$(realpath {params.container})
+        log_abs=$(realpath {log})
+
+        assembly_abs=$(realpath {input.assembly})
+        bins_abs=$(realpath {input.bins_dir})
+
+        bakta_arg=""
+        bakta_bind=""
+        if [ -n "{params.bakta_db}" ]; then
+            if [ ! -d "{params.bakta_db}" ]; then
+                echo "Configured config.magqual.bakta_db path does not exist: {params.bakta_db}" >> {log}
+                exit 1
+            fi
+            bakta_arg="--baktadb {params.bakta_db}"
+            bakta_bind="-B {params.bakta_db}:{params.bakta_db}"
+        else
+            echo "config.magqual.bakta_db is empty; MAGqual will download/use its own Bakta light database in the MAGqual run directory." >> {log}
+        fi
+
+        checkm_arg=""
+        if [ -n "{params.checkm_db}" ]; then
+            if [ ! -d "{params.checkm_db}" ]; then
+                echo "Configured config.magqual.checkm_db path does not exist: {params.checkm_db}" >> {log}
+                exit 1
+            fi
+            checkm_arg="--checkmdb {params.checkm_db}"
+        fi
+
+        cd {params.outdir}
+        singularity exec -B "$PWD:$PWD" $bakta_bind -B "$bins_abs:$bins_abs" -B "$assembly_abs:$assembly_abs" "$container_abs" \
+            sh -c "magqual -a '$assembly_abs' -b '$bins_abs' -p '{wildcards.sample}' -j {threads} $bakta_arg $checkm_arg" >> "$log_abs" 2>&1
+
+        test -s analysis/genome_bins/{wildcards.sample}_qual_MAGs.txt
+        touch mimag.done
+        """

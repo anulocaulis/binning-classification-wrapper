@@ -11,6 +11,7 @@ QC_CONTAINER = "containers/multi_qc.sif"
 BINNING_CONTAINER = "containers/metawrap.sif"
 CLASSIFICATION_CONTAINER = "containers/qc_binning_annotation.sif"
 CLASSIFICATION_GTD_GUNC_CONTAINER = "containers/classification.sif"
+MAGQUAL_CONTAINER = "containers/magqual.sif"
 NONPAREIL_CONTAINER = "containers/nonpareil.sif"
 
 ALL_SAMPLES = config["all_samples"]
@@ -70,6 +71,7 @@ BASE_TARGETS = [
     *expand(f"{OUTPUT_DIR}/{{sample}}/assembly_eval/{{assembly_type}}/mapping/flagstat.txt", sample=COMPARE_SAMPLES, assembly_type=ASSEMBLY_TYPES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/assembly_eval/{{assembly_type}}/mapping/idxstats.txt", sample=COMPARE_SAMPLES, assembly_type=ASSEMBLY_TYPES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/mag_integrity/busco/busco.done", sample=ALL_SAMPLES),
+    *expand(f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual/mimag.done", sample=ALL_SAMPLES),
     *expand(f"{OUTPUT_DIR}/{{sample}}/functional/prokka/prokka.done", sample=ALL_SAMPLES),
 ]
 

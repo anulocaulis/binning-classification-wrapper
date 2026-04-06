@@ -22,8 +22,17 @@ rule prokka_annotate_bins:
         : > {log}
         for f in {input.bins_dir}/*.fa; do
             name=$(basename "$f" .fa)
+            outdir="{params.outdir}/$name"
+            gff="$outdir/$name.gff"
+
+            if [[ -s "$gff" ]]; then
+                echo "[$(date '+%F %T')] Skipping $name (existing annotation found: $gff)" >> {log}
+                continue
+            fi
+
+            rm -rf "$outdir"
             singularity exec {params.container} {params.executable} \
-                --outdir {params.outdir}/"$name" --prefix "$name" \
+                --outdir "$outdir" --prefix "$name" \
                 --cpus {threads} --kingdom {params.kingdom} "$f" >> {log} 2>&1
         done
         touch {output.done}

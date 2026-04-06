@@ -1,0 +1,93 @@
+Bootstrap: docker
+From: continuumio/miniconda3:latest
+
+# To build this container image, use the command below on a Linux machine with Singularity:
+# sudo singularity build magqual.sif magqual.def
+
+%environment
+    # Set locale and path to the MAGqual conda environment
+    export LC_ALL=C
+    export PATH=/opt/conda/envs/magqual/bin:$PATH
+
+%post
+    # 1. Update APT and install core/system dependencies used by MAGqual workflows
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        wget \
+        curl \
+        git \
+        bzip2 \
+        libgl1 \
+        build-essential \
+        ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+    # 2. Install mamba in base env for fast solving
+    /opt/conda/bin/conda install -y -n base -c conda-forge mamba
+
+    # 3. Create MAGqual env with required versions/tools
+    /opt/conda/bin/mamba create -y \
+        --name magqual \
+        --channel conda-forge \
+        --channel bioconda \
+        --strict-channel-priority \
+        python=3.12 \
+        pip \
+        snakemake \
+        bakta>=1.7.0 \
+        checkm2=1.1.0 \
+        barrnap \
+        trnascan-se
+
+    # 4. Clone the MAGqual pipeline repo (not on PyPI — it is a Snakemake workflow)
+    git clone https://github.com/ac1513/MAGqual.git /opt/MAGqual
+
+    # 5. Write a thin wrapper so MAGqual can be called by name
+    cat > /usr/local/bin/magqual << 'WRAPPER'
+#!/bin/bash
+exec /opt/conda/envs/magqual/bin/python /opt/MAGqual/MAGqual.py "$@"
+WRAPPER
+    chmod +x /usr/local/bin/magqual
+
+    # 6. Expose snakemake on PATH as a convenience
+    ln -sf /opt/conda/envs/magqual/bin/snakemake /usr/local/bin/snakemake
+
+    # 7. Clean up Conda caches to minimize final image size
+    /opt/conda/bin/conda clean -a -y
+
+%runscript
+    # The default command when running the container (exec / run)
+    exec /usr/local/bin/magqual "$@"
+
+%labels
+Maintainer lowry-nitrogen-team
+CreationDate 2026-04-06
+Version magqual-py312
+Description Singularity container for MAGqual (git clone ac1513/MAGqual) with Snakemake, mamba, Bakta, CheckM2, Barrnap, and tRNAscan-SE.
+
+%help
+This Singularity container provides a MAGqual-ready runtime with the core
+workflow engine and required annotation/QC dependencies:
+- Python 3.12
+- Snakemake
+- mamba (for fast dependency solving)
+- Bakta (v1.7.0+)
+- CheckM2
+- Barrnap
+- tRNAscan-SE
+
+The container includes wget/curl/git for pulling lightweight resources or source,
+and libgl1 for headless plotting dependencies.
+
+Default command behavior:
+- Runs `python /opt/MAGqual/MAGqual.py` via the `/usr/local/bin/magqual` wrapper.
+
+Example usage:
+singularity exec magqual.sif magqual --help
+singularity exec magqual.sif magqual --asm assembly.fa --bins bins_dir/
+singularity exec magqual.sif snakemake --help
+
+MAGqual source is cloned to /opt/MAGqual inside the container.
+Databases (Bakta, CheckM2) are downloaded at runtime unless --baktadb / --checkmdb
+are passed to point to pre-staged paths on the host.

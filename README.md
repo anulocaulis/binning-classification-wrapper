@@ -111,6 +111,50 @@ singularity exec containers/nonpareil.sif nonpareil -h
 
 ## Databases and external data
 
+### Database setup overview
+
+**Important**: All external reference databases must be downloaded and installed **before** running the workflow. The Snakemake DAG is built at workflow startup and checks for the existence of database paths—if a database is missing, its corresponding workflow targets will be skipped silently.
+
+#### Required databases
+
+- **Kraken2** (~75 GB unpacked) — taxonomic classification of reads
+- **GTDB-Tk** (~60 GB unpacked) — taxonomic classification of MAGs
+
+#### Optional but recommended
+
+- **Bakta** (~2.8 GB full, or ~300 MB light) — functional annotation (used by MAGqual for MIMAG labeling)
+
+#### Fully optional
+
+- **CheckM2** (~DIAMOND database file, size varies) — MAG quality scoring
+- **GUNC** (varying size) — contamination/chimera detection
+- **MetaWRAP blobology NT database** (>150 GB) — GC/coverage visualization
+
+#### Installation workflow
+
+1. **Create a shared database directory** (if not already present):
+   ```bash
+   mkdir -p /path/to/databases
+   cd /path/to/databases
+   ```
+
+2. **Download each required/desired database**:
+   - Kraken2 → Use `kraken2_library_build.sh` script or manual download
+   - GTDB-Tk → Use `gtdbtk_data_setup.sh` script or manual download
+   - Bakta → Use `bakta_db download --type full --output /path/to/databases/bakta_db`
+
+3. **Update `config.yaml`** to point to downloaded databases:
+   ```yaml
+   kraken2_db: "/path/to/databases/k2_standard"
+   gtdbtk_db: "/path/to/databases/gtdbtk_db"
+   magqual:
+     bakta_db: "/path/to/databases/bakta_db"
+   ```
+
+4. **Run the workflow** — targets for missing databases will be automatically skipped.
+
+---
+
 ### Kraken2
 
 **Database**: Kraken2 Standard (Jan 2024 build)
