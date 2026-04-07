@@ -54,8 +54,14 @@ rule busco_assess_bins:
         : > {log}
         for f in {input.bins_dir}/*.fa; do
             name=$(basename "$f" .fa)
+            summary="{params.outdir}/$name/short_summary.specific.{params.lineage}.$name.txt"
+            if [ -s "$summary" ]; then
+                echo "Skipping completed BUSCO run for $name" >> {log}
+                continue
+            fi
+            rm -rf "{params.outdir}/$name"
             singularity exec {params.container} {params.executable} \
-                -i "$f" -o "$name" -m {params.mode} -l {params.lineage} \
+                -i "$f" -o "$name" -m {params.mode} -l {params.lineage} -f \
                 --cpu {threads} --out_path {params.outdir} >> {log} 2>&1
         done
         touch {output.done}
@@ -64,19 +70,18 @@ rule busco_assess_bins:
 
 rule magqual_label_mimag:
     """
-    Runs MAGqual independently to produce native MIMAG labeling for refined bins.
+    Runs Bakta on refined bins inside magqual.sif.
+    This intentionally skips MAGqual's internal CheckM1 workflow.
     """
     input:
         bins_dir=f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins",
         assembly=lambda wildcards: config["input_reads"]["assembly"].format(sample=wildcards.sample)
     output:
-        labels=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual/analysis/genome_bins/{{sample}}_qual_MAGs.txt",
         done=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual/mimag.done"
     params:
         outdir=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual",
         container=MAGQUAL_CONTAINER,
-        bakta_db=lambda wildcards: config.get("magqual", {}).get("bakta_db", ""),
-        checkm_db=lambda wildcards: config.get("magqual", {}).get("checkm_db", "")
+        bakta_db=lambda wildcards: config.get("magqual", {}).get("bakta_db", "")
     threads: config["threads"]
     log: "logs/mag_integrity_magqual_{sample}.log"
     shell:
@@ -84,38 +89,49 @@ rule magqual_label_mimag:
         mkdir -p {params.outdir} logs
         : > {log}
 
+        if [ -z "{params.bakta_db}" ]; then
+            echo "config.magqual.bakta_db must be set for Bakta-only mode." >> {log}
+            exit 1
+        fi
+        if [ ! -d "{params.bakta_db}" ]; then
+            echo "Configured config.magqual.bakta_db path does not exist: {params.bakta_db}" >> {log}
+            exit 1
+        fi
+
         container_abs=$(realpath {params.container})
-        log_abs=$(realpath {log})
-
-        assembly_abs=$(realpath {input.assembly})
         bins_abs=$(realpath {input.bins_dir})
+        bakta_db_abs=$(realpath {params.bakta_db})
+        out_abs=$(realpath {params.outdir})
 
-        bakta_arg=""
-        bakta_bind=""
-        if [ -n "{params.bakta_db}" ]; then
-            if [ ! -d "{params.bakta_db}" ]; then
-                echo "Configured config.magqual.bakta_db path does not exist: {params.bakta_db}" >> {log}
-                exit 1
+        mkdir -p "$out_abs/analysis/bakta/{wildcards.sample}"
+
+        # bakta 1.8.1 in magqual.sif uses pyrodigal.OrfFinder (pre-3.x API).
+        # Install pyrodigal==2.1.0 to a local dir and override via PYTHONPATH.
+        pyrodigal_fix="$out_abs/.pyrodigal_fix"
+        mkdir -p "$pyrodigal_fix"
+        singularity exec \
+            -B "$out_abs:$out_abs" \
+            "$container_abs" \
+            sh -lc "PATH=/opt/conda/envs/magqual/bin:$PATH; pip install 'pyrodigal==2.1.0' -q --target '$pyrodigal_fix'" >> {log} 2>&1
+
+        for f in "$bins_abs"/*.fa; do
+            name=$(basename "$f" .fa)
+            bin_out="$out_abs/analysis/bakta/{wildcards.sample}/$name"
+
+            if [ -s "$bin_out/$name.tsv" ] && [ -s "$bin_out/$name.txt" ] && [ -s "$bin_out/$name.faa" ]; then
+                echo "Skipping completed Bakta run for $name" >> {log}
+                continue
             fi
-            bakta_arg="--baktadb {params.bakta_db}"
-            bakta_bind="-B {params.bakta_db}:{params.bakta_db}"
-        else
-            echo "config.magqual.bakta_db is empty; MAGqual will download/use its own Bakta light database in the MAGqual run directory." >> {log}
-        fi
 
-        checkm_arg=""
-        if [ -n "{params.checkm_db}" ]; then
-            if [ ! -d "{params.checkm_db}" ]; then
-                echo "Configured config.magqual.checkm_db path does not exist: {params.checkm_db}" >> {log}
-                exit 1
-            fi
-            checkm_arg="--checkmdb {params.checkm_db}"
-        fi
+            rm -rf "$bin_out"
 
-        cd {params.outdir}
-        singularity exec -B "$PWD:$PWD" $bakta_bind -B "$bins_abs:$bins_abs" -B "$assembly_abs:$assembly_abs" "$container_abs" \
-            sh -c "magqual -a '$assembly_abs' -b '$bins_abs' -p '{wildcards.sample}' -j {threads} $bakta_arg $checkm_arg" >> "$log_abs" 2>&1
+            singularity exec \
+                -B "$bins_abs:$bins_abs" \
+                -B "$out_abs:$out_abs" \
+                -B "$bakta_db_abs:$bakta_db_abs" \
+                "$container_abs" \
+                sh -lc "PATH=/opt/conda/envs/magqual/bin:$PATH; PYTHONPATH='$pyrodigal_fix' bakta --force --db '$bakta_db_abs' --output '$bin_out' --prefix '$name' --threads {threads} '$f'" >> {log} 2>&1
+        done
 
-        test -s analysis/genome_bins/{wildcards.sample}_qual_MAGs.txt
-        touch mimag.done
+        touch {output.done}
         """

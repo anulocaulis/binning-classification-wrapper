@@ -26,16 +26,20 @@ From: continuumio/miniconda3:latest
     # 2. Install mamba in base env for fast solving
     /opt/conda/bin/conda install -y -n base -c conda-forge mamba
 
-    # 3. Create MAGqual env with required versions/tools
+    # 3. Create MAGqual env with pinned compatible versions/tools
+    # NOTE: Keep bakta/pyrodigal/python pinned together.
+    # bakta 1.8.x + pyrodigal 3.x under Python 3.12 caused runtime failures
+    # (missing pyrodigal.OrfFinder) during CDS prediction in this pipeline.
     /opt/conda/bin/mamba create -y \
         --name magqual \
         --channel conda-forge \
         --channel bioconda \
         --strict-channel-priority \
-        python=3.12 \
+        python=3.10 \
         pip \
-        snakemake \
-        bakta>=1.7.0 \
+        snakemake=7.32.4 \
+        bakta=1.7.0 \
+        pyrodigal=2.1.0 \
         checkm2=1.1.0 \
         barrnap \
         trnascan-se
@@ -63,16 +67,17 @@ WRAPPER
 %labels
 Maintainer lowry-nitrogen-team
 CreationDate 2026-04-06
-Version magqual-py312
+Version magqual-py310-bakta170
 Description Singularity container for MAGqual (git clone ac1513/MAGqual) with Snakemake, mamba, Bakta, CheckM2, Barrnap, and tRNAscan-SE.
 
 %help
 This Singularity container provides a MAGqual-ready runtime with the core
 workflow engine and required annotation/QC dependencies:
-- Python 3.12
+- Python 3.10
 - Snakemake
 - mamba (for fast dependency solving)
-- Bakta (v1.7.0+)
+- Bakta 1.7.0
+- pyrodigal 2.1.0 (compatibility pin for Bakta)
 - CheckM2
 - Barrnap
 - tRNAscan-SE

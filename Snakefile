@@ -12,6 +12,7 @@ BINNING_CONTAINER = "containers/metawrap.sif"
 CLASSIFICATION_CONTAINER = "containers/qc_binning_annotation.sif"
 CLASSIFICATION_GTD_GUNC_CONTAINER = "containers/classification.sif"
 MAGQUAL_CONTAINER = "containers/magqual.sif"
+MAGSCOT_CONTAINER = "containers/magscot.sif"
 NONPAREIL_CONTAINER = "containers/nonpareil.sif"
 
 ALL_SAMPLES = config["all_samples"]
@@ -43,6 +44,7 @@ CHECKM2_ENABLED = bool(config.get("checkm2_db")) and os.path.exists(config["chec
 GUNC_ENABLED = bool(config.get("gunc_db")) and os.path.exists(config["gunc_db"]) and container_has_executable(
     CLASSIFICATION_GTD_GUNC_CONTAINER, "gunc"
 )
+MAGSCOT_ENABLED = bool(config.get("magscot", {}).get("enabled", False))
 BLOBOLOGY_NT_DB = config.get("blobology_nt_db", "/home/beitnerm/NCBI_NT_DB/nt.00.nhd")
 BLOBOLOGY_ENABLED = os.path.exists(BLOBOLOGY_NT_DB)
 
@@ -89,6 +91,9 @@ if GTDBTK_ENABLED:
 if GUNC_ENABLED:
     BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/mag_integrity/gunc/gunc.done", sample=ALL_SAMPLES))
 
+if MAGSCOT_ENABLED:
+    BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/bin_refinement/magscot/magscot.done", sample=ALL_SAMPLES))
+
 rule all:
     input:
         BASE_TARGETS,
@@ -100,5 +105,6 @@ include: "modules/classification.smk"
 include: "modules/assembly_eval.smk"
 include: "modules/nonpareil.smk"
 include: "modules/mag_integrity.smk"
+include: "modules/magscot.smk"
 include: "modules/functional_annotation.smk"
 include: "modules/multiqc.smk"

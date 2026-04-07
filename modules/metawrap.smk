@@ -117,24 +117,26 @@ rule checkm2_quality:
 		report=f"{OUTPUT_DIR}/{{sample}}/checkm2/quality_report.tsv"
 	params:
 		outdir=f"{OUTPUT_DIR}/{{sample}}/checkm2",
-		container=CLASSIFICATION_CONTAINER,
-		executable="/opt/conda/envs/checkm2/bin/checkm2",
+		container=MAGQUAL_CONTAINER,
+		executable="checkm2",
 		database=lambda wildcards: config.get("checkm2_db", "")
 	threads: config["threads"]
 	log: "logs/binning_checkm2_{sample}.log"
 	shell:
 		"""
+		rm -rf {params.outdir}
 		mkdir -p {params.outdir}
+		: > {log}
 		if [ -z "{params.database}" ] || [ ! -e {params.database} ]; then
 			echo "CheckM2 requires config.checkm2_db to point at a downloaded DIAMOND database file." >&2
 			exit 1
 		fi
-		singularity exec {params.container} {params.executable} predict \
+		singularity exec {params.container} sh -lc 'PATH=/opt/conda/envs/magqual/bin:$PATH; {params.executable} predict \
 			--input {input.bins_dir} \
 			--output-directory {params.outdir} \
 			--threads {threads} \
 			--database_path {params.database} \
-			--extension .fa 2>> {log}
+			--extension .fa' 2>> {log}
 		"""
 
 

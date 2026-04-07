@@ -109,6 +109,29 @@ magqual:
   # Optional CheckM database directory for MAGqual's internal CheckM step.
   checkm_db: ""
 
+# MAGScoT options
+magscot:
+  enabled: false
+  # REQUIRED when enabled: HMM database used by hmmscan to generate marker hits.
+  marker_hmm_db: ""
+  # hmmscan sequence-level E-value threshold for marker hit generation.
+  hmmer_evalue: 1e-10
+  # Scoring profile: bac120+ar53, ar53, or bac120
+  profile: "bac120+ar53"
+  # Output basename written under {output_dir}/{sample}/bin_refinement/magscot/
+  out: "MAGScoT"
+  bin_separator: "cleanbin"
+  score_a: 1
+  score_b: 0.5
+  score_c: 0.5
+  max_cont: 1
+  threshold: 0.5
+  min_markers: 25
+  min_sharing: 0.8
+  n_iterations: 2
+  score_only: false
+  skip_merge_bins: false
+
 # BUSCO options
 busco:
   lineage: "bacteria_odb10"

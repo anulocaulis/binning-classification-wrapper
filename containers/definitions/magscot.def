@@ -1,0 +1,112 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+
+# To build this container image, use the command below:
+# sudo singularity build magscot.sif magscot.def
+
+
+%environment
+    export LC_ALL=C
+    export PATH="/opt/MAGScoT:/opt/conda/bin:/usr/local/bin:/usr/bin:$PATH"
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    export TZ=Etc/UTC
+
+    # Update and install core system dependencies
+    apt-get update -y
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        wget \
+        git \
+        curl \
+        ca-certificates \
+        bzip2 \
+        unzip \
+        python3 \
+        python3-pip \
+        r-base-core
+
+    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime
+    echo $TZ > /etc/timezone
+    dpkg-reconfigure -f noninteractive tzdata
+
+    # Install Miniforge (conda-forge based) to avoid Anaconda ToS channel prompts
+    curl -sSL https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -o /tmp/miniforge.sh
+    bash /tmp/miniforge.sh -b -p /opt/conda
+    rm -f /tmp/miniforge.sh
+    export PATH="/opt/conda/bin:/usr/local/bin:/usr/bin:$PATH"
+
+    conda config --system --remove-key channels || true
+    conda config --system --prepend channels conda-forge
+    conda config --system --append channels bioconda
+    conda config --system --set channel_priority strict
+
+    # Install MAGScot dependencies from Bioconda/Conda-Forge
+    conda install -y \
+        r-base \
+        r-optparse \
+        r-dplyr \
+        r-readr \
+        r-furrr \
+        r-digest \
+        hmmer \
+        prodigal \
+        parallel \
+        python=3.11
+
+    conda clean -afy
+
+    # Install MAGScoT source and provide a stable launcher command
+    cd /opt && \
+    git clone --depth 1 --branch v1.1 https://github.com/ikmb/MAGScoT.git
+
+    cat > /usr/local/bin/magscot << 'EOF'
+#!/bin/bash
+exec Rscript /opt/MAGScoT/MAGScoT.R "$@"
+EOF
+    chmod +x /usr/local/bin/magscot
+
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%runscript
+    echo "==================================================================="
+    echo "This container includes MAGScot for metagenome bin refinement:"
+    echo "  - MAGScoT.R"
+    echo "  - magscot (wrapper command)"
+    echo "-------------------------------------------------------------------"
+    echo "To run MAGScot, use the 'exec' command:"
+    echo "singularity exec magscot.sif magscot --help"
+    echo "singularity exec magscot.sif Rscript /opt/MAGScoT/MAGScoT.R --help"
+    echo "==================================================================="
+
+    # Execute the command passed by the user
+    exec "$@"
+
+%labels
+    Maintainer lowry-nitrogen-team
+    CreationDate 2026-04-01
+    Version 1.0-magscot
+    Description Singularity container with MAGScot bin refinement/scoring tool
+
+
+%help
+This Apptainer (Singularity) container provides MAGScot for metagenome bin
+refinement and scoring.
+
+Installed primary tool:
+- MAGScoT (from https://github.com/ikmb/MAGScoT)
+
+USAGE:
+To run MAGScot, use the 'exec' command and call either wrapper or R entrypoint:
+
+singularity exec magscot.sif magscot --help
+singularity exec magscot.sif Rscript /opt/MAGScoT/MAGScoT.R --help
+
+Example skeleton command:
+singularity exec magscot.sif magscot \
+    -i contigs_to_bin.tsv \
+    --hmm marker_hits.tsv \
+    -o MAGScoT
