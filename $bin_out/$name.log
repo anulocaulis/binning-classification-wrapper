@@ -1,0 +1,11 @@
+18:32:48.515 - INFO - UTILS - version=1.7.0
+18:32:48.515 - INFO - UTILS - developer: Oliver Schwengers, github.com/oschwengers
+18:32:48.515 - INFO - UTILS - command: /opt/conda/envs/bakta/bin/bakta --db $bakta_db_abs --output $bin_out --prefix $name --threads 16 $f
+18:32:48.515 - INFO - UTILS - local time: 2026-04-07 18:32:48
+18:32:48.580 - INFO - UTILS - machine: type=, cores=64
+18:32:48.580 - INFO - UTILS - system: type=Linux, release=4.18.0-240.15.1.el8_3.x86_64
+18:32:48.580 - INFO - UTILS - python: version=3.10.20, implementation=CPython
+18:32:48.580 - INFO - CONFIG - threads=16
+18:32:48.580 - INFO - CONFIG - verbose=False
+18:32:48.580 - INFO - CONFIG - debug=False
+18:32:48.581 - ERROR - CONFIG - unvalid database path: type=parameter, path=/storage/biology/projects/miller-lowry/beitner/binning-classification-wrapper/$bakta_db_abs

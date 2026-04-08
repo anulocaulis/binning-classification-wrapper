@@ -11,8 +11,10 @@ QC_CONTAINER = "containers/multi_qc.sif"
 BINNING_CONTAINER = "containers/metawrap.sif"
 CLASSIFICATION_CONTAINER = "containers/qc_binning_annotation.sif"
 CLASSIFICATION_GTD_GUNC_CONTAINER = "containers/classification.sif"
+BAKTA_CONTAINER = "containers/bakta.sif"
 MAGQUAL_CONTAINER = "containers/magqual.sif"
 MAGSCOT_CONTAINER = "containers/magscot.sif"
+VAMB_CONTAINER = "containers/vamb.sif"
 NONPAREIL_CONTAINER = "containers/nonpareil.sif"
 
 ALL_SAMPLES = config["all_samples"]
@@ -94,6 +96,8 @@ if GUNC_ENABLED:
 if MAGSCOT_ENABLED:
     BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/bin_refinement/magscot/magscot.done", sample=ALL_SAMPLES))
 
+BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/binning/vamb.done", sample=ALL_SAMPLES))
+
 rule all:
     input:
         BASE_TARGETS,
@@ -106,5 +110,6 @@ include: "modules/assembly_eval.smk"
 include: "modules/nonpareil.smk"
 include: "modules/mag_integrity.smk"
 include: "modules/magscot.smk"
+include: "modules/vamb.smk"
 include: "modules/functional_annotation.smk"
 include: "modules/multiqc.smk"

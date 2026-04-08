@@ -113,7 +113,7 @@ magqual:
 magscot:
   enabled: false
   # REQUIRED when enabled: HMM database used by hmmscan to generate marker hits.
-  marker_hmm_db: ""
+  marker_hmm_db: "/storage/biology/projects/miller-lowry/beitner/databases/magscot_markers"
   # hmmscan sequence-level E-value threshold for marker hit generation.
   hmmer_evalue: 1e-10
   # Scoring profile: bac120+ar53, ar53, or bac120
@@ -131,6 +131,14 @@ magscot:
   n_iterations: 2
   score_only: false
   skip_merge_bins: false
+
+# VAMB options
+vamb:
+  # Use contigs from input_reads.assembly (e.g., megahit.final.contigs.fa)
+  # and abundance derived from SR mapping BAM.
+  min_contig_len: 2000
+  threads: 16
+  norefcheck: false
 
 # BUSCO options
 busco:

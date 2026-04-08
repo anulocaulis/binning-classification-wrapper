@@ -20,6 +20,8 @@ This pipeline integrates multiple metagenomic analysis tools into a cohesive Sna
 - **MetaWRAP bin_refinement** — consolidates & de-replicates bins (completeness ≥50%, contamination ≤10%)
 - **MetaWRAP blobology** — visualizes bin quality via GC content and coverage plots
 - **CheckM2** — quality estimation (completeness & contamination in refined bins)
+- **VAMB** — VAE-based binning from contigs + short-read abundance; runs on all samples unconditionally
+- **MAGScoT** (optional) — marker-gene scoring and multi-tool bin merging using HMMER + R; enabled via `magscot.enabled: true`
 
 ### Read and bin classification
 - **Kraken2** — taxonomic classification of reads (Kraken2 Standard DB, Jan 2024 build)
@@ -33,6 +35,7 @@ This pipeline integrates multiple metagenomic analysis tools into a cohesive Sna
 ### MAG integrity and function
 - **GUNC** — chimera detection (optional, database required)
 - **BUSCO** — universal single-copy gene completeness (lineage=bacteria_odb10, mode=genome)
+- **MAGqual / Bakta** — MIMAG-standard labeling via Bakta functional annotation (runs in `bakta.sif`; AMRFinder internal DB initialized once automatically)
 - **Prokka** — functional gene annotation (kingdom=Bacteria)
 
 ### Report generation
@@ -41,15 +44,15 @@ This pipeline integrates multiple metagenomic analysis tools into a cohesive Sna
 ## Active modules
 
 - `modules/preassembly_qc.smk` — FastQC, NanoPlot, Filtlong, split reads
-- `modules/metawrap.smk` — binning, refinement, blobology, CheckM2
+- `modules/metawrap.smk` — binning (MetaBAT2, MaxBin2, CONCOCT), refinement, blobology, CheckM2
+- `modules/vamb.smk` — VAMB abundance generation and VAE binning (unconditional, all samples)
+- `modules/magscot.smk` — MAGScoT marker generation, protein prediction, bin refinement (optional)
 - `modules/classification.smk` — Kraken2, GTDB-Tk
 - `modules/assembly_eval.smk` — metaQUAST, mapping
 - `modules/nonpareil.smk` — Nonpareil coverage estimation
-- `modules/mag_integrity.smk` — GUNC, BUSCO
+- `modules/mag_integrity.smk` — GUNC, BUSCO, MAGqual/Bakta MIMAG labeling
 - `modules/functional_annotation.smk` — Prokka
 - `modules/multiqc.smk` — final report aggregation
-
-Note: `modules/binning.smk` is legacy/redundant and not included in the main `Snakefile`.
 
 ## Containers and tool versions
 
@@ -57,10 +60,15 @@ Note: `modules/binning.smk` is legacy/redundant and not included in the main `Sn
 
 | Container | Path | Base | Version | Tools included |
 |-----------|------|------|---------|-----------------|
-| MetaWRAP | `containers/metawrap.sif` | miniconda3:latest | 1.3.2-conda | metawrap-mg (latest), metabat2, maxbin2, concoct, bowtie2, bwa, samtools |
-| QC & Binning & Annotation | `containers/qc_binning_annotation.sif` | mambaorg/micromamba | v1.0 | bbmap, CheckM2 (6.0.0), BUSCO (6.0.0), Prokka, MetaQUAST, Kraken2, dRep, CoverM, MultiQC |
-| MultiQC (standalone) | `containers/multi_qc.sif` | miniconda3:latest | 1.2-conda | MultiQC (latest) |
+| MetaWRAP | `containers/metawrap.sif` | miniconda3:latest | 1.3.2-conda | metawrap-mg, metabat2, maxbin2, concoct, bowtie2, bwa, samtools |
+| QC & Binning & Annotation | `containers/qc_binning_annotation.sif` | mambaorg/micromamba | v1.0 | bbmap, CheckM2, BUSCO 6.0.0, Prokka, MetaQUAST, Kraken2, dRep, CoverM, MultiQC |
+| MultiQC (standalone) | `containers/multi_qc.sif` | miniconda3:latest | 1.2-conda | MultiQC |
 | Nonpareil | `containers/nonpareil.sif` | BioContainers | 3.5.5--r44h077b44d_2 | Nonpareil v3.5.5 (R 4.4.x) |
+| VAMB | `containers/vamb.sif` | custom | latest | VAMB (VAE binning), samtools |
+| MAGScoT | `containers/magscot.sif` | custom | latest | MAGScoT R package, HMMER 3.4, Prodigal |
+| MAGqual | `containers/magqual.sif` | custom | latest | MAGqual, CheckM2 |
+| Bakta | `containers/bakta.sif` | custom | 1.7.0 | Bakta, AMRFinderPlus, pyrodigal |
+| Classification | `containers/classification.sif` | custom | latest | GTDB-Tk, GUNC |
 
 ### Tool versions (from container definitions)
 
@@ -122,7 +130,8 @@ singularity exec containers/nonpareil.sif nonpareil -h
 
 #### Optional but recommended
 
-- **Bakta** (~2.8 GB full, or ~300 MB light) — functional annotation (used by MAGqual for MIMAG labeling)
+- **Bakta** (~30 GB full, or ~2.8 GB light) — functional annotation (used by MAGqual for MIMAG labeling); the AMRFinder internal DB inside the Bakta DB directory is initialized automatically on first run via `amrfinder_update`
+- **MAGScoT markers** — HMM marker database for `magscot.smk`; stored at the path set in `magscot.marker_hmm_db`; must be in HMMER3/f format (convert with `hmmconvert` if needed)
 
 #### Fully optional
 
@@ -141,14 +150,19 @@ singularity exec containers/nonpareil.sif nonpareil -h
 2. **Download each required/desired database**:
    - Kraken2 → Use `kraken2_library_build.sh` script or manual download
    - GTDB-Tk → Use `gtdbtk_data_setup.sh` script or manual download
-   - Bakta → Use `bakta_db download --type full --output /path/to/databases/bakta_db`
+   - Bakta → `singularity exec containers/bakta.sif bakta_db download --type full --output /path/to/databases/bakta_db`
+   - MAGScoT markers → download from the MAGScoT repository and convert with `hmmconvert` to HMMER3/f format if needed
 
 3. **Update `config.yaml`** to point to downloaded databases:
    ```yaml
    kraken2_db: "/path/to/databases/k2_standard"
    gtdbtk_db: "/path/to/databases/gtdbtk_db"
+   checkm2_db: "/path/to/databases/CheckM2_database/uniref100.KO.1.dmnd"
+   gunc_db: "/path/to/databases/gunc_db/gunc_db_progenomes2.1.dmnd"
    magqual:
      bakta_db: "/path/to/databases/bakta_db"
+   magscot:
+     marker_hmm_db: "/path/to/databases/magscot_markers"
    ```
 
 4. **Run the workflow** — targets for missing databases will be automatically skipped.
@@ -255,6 +269,27 @@ You can override that path with `blobology_nt_db` in `config.yaml`. If the file 
 | Parameter | Default | Biological relevance |
 |-----------|---------|----------------------|
 | (implicit) | — | Visually identifies contamination via GC content and coverage anomalies |
+
+### VAMB (VAE-based binning)
+
+| Parameter | Default | Biological relevance |
+|-----------|---------|----------------------|
+| `vamb.min_contig_len` | `2000` | Minimum contig length (bp); shorter contigs are excluded from the VAE model |
+| `vamb.threads` | `16` | Parallelism for VAMB inference |
+| `vamb.norefcheck` | `false` | Skip VAMB's internal reference name consistency check; useful for large assemblies |
+
+VAMB always runs on all samples. Abundance is generated from the short-read mapping BAM via `samtools idxstats`.
+
+### MAGScoT (optional marker-gene bin refinement)
+
+| Parameter | Default | Biological relevance |
+|-----------|---------|----------------------|
+| `magscot.enabled` | `false` | Set `true` to add MAGScoT refinement targets for all samples |
+| `magscot.marker_hmm_db` | (path) | Directory of HMM files (HMMER3/f format); scanned against predicted proteins |
+| `magscot.hmmer_evalue` | `1e-10` | E-value cut-off for hmmscan marker detection |
+| `magscot.profile` | `bac120+ar53` | MAGScoT scoring profile; `bac120+ar53` maps to `default` internally |
+| `magscot.min_markers` | `25` | Minimum marker count to include a bin in refinement |
+| `magscot.threshold` | `0.5` | Score threshold for bin acceptance |
 
 ### Assembly evaluation
 
@@ -373,9 +408,11 @@ binning_outputs/{sample}/
 ├── binning/
 │   ├── metabat2_bins/           # MetaBAT2 bins
 │   ├── maxbin2_bins/            # MaxBin2 bins
-│   └── concoct_bins/            # CONCOCT bins
+│   ├── concoct_bins/            # CONCOCT bins
+│   └── vamb/                    # VAMB output: clusters.tsv, model.pt, vamb_bins/
 ├── bin_refinement/
-│   └── metawrap_50_10_bins/     # Refined bins (>50% complete, <10% contaminated)
+│   ├── metawrap_50_10_bins/     # MetaWRAP refined bins (>50% complete, <10% contaminated)
+│   └── magscot/                 # MAGScoT refined bins (optional)
 ├── blobology/
 │   ├── blobplot.pdf             # GC vs. coverage visualization
 │   └── ...                       # Additional blobology outputs
@@ -393,10 +430,12 @@ binning_outputs/{sample}/
 │       ├── metaquast/            # metaQUAST contiguity reports
 │       ├── nonpareil/            # Coverage curves
 │       └── mapping/              # Bowtie2 alignment stats (flagstat, idxstats)
-└── mag_integrity/
-    ├── gunc/                     # Contamination detection (optional)
-    ├── busco/                    # Gene completeness
-    └── prokka/                   # Functional annotation
+├── mag_integrity/
+│   ├── gunc/                     # Contamination detection (optional)
+│   ├── busco/                    # Gene completeness
+│   └── magqual/                  # MIMAG labeling via Bakta annotation
+└── functional/
+    └── prokka/                   # Prokka gene annotation
 
 binning_outputs/multiqc/
 ├── multiqc_report.html           # Final consolidated QC report
@@ -503,6 +542,7 @@ This workflow uses pinned container versions to ensure reproducibility:
 
 - **MetaWRAP**: version 1.3.2-conda in `containers/metawrap.sif`
 - **Nonpareil**: 3.5.5 from BioContainers (quay.io/biocontainers/nonpareil:3.5.5--r44h077b44d_2)
+- **Bakta**: 1.7.0 in `containers/bakta.sif`
 - **Kraken2 DB**: `k2_standard_20240112.tar.gz` (Jan 2024 build)
 - **GTDB-Tk**: user-provided database (see above)
 
@@ -515,3 +555,6 @@ For publications, cite:
 - **Nonpareil**: Chaves-Morales, J., et al. (2013). Evaluating Metagenomics Sequence Coverage.
 - **BUSCO**: Simão, F. A., et al. (2015). BUSCO: a universal standard for assessing the completeness of genome projects. *Bioinformatics*, 31(19), 3210–3212.
 - **Prokka**: Seemann, T. (2014). Prokka: rapid prokaryotic genome annotation. *Bioinformatics*, 30(15), 2068–2069.
+- **VAMB**: Nissen, J. N., et al. (2021). Improved metagenome binning and assembly using deep variational autoencoders. *Nature Biotechnology*, 39, 555–560.
+- **MAGScoT**: Schmid, M., et al. (2023). MAGScoT: a fast, lightweight, and accurate bin-refinement tool. *Bioinformatics*, 39(4).
+- **Bakta**: Schwengers, O., et al. (2021). Bakta: rapid and standardized annotation of bacterial genomes via alignment-free sequence identification. *Microbial Genomics*, 7(11).

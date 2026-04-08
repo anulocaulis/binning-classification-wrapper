@@ -1,0 +1,73 @@
+Bootstrap: docker
+From: continuumio/miniconda3:latest
+
+# To build this container image, use the command below on a Linux machine with Apptainer/Singularity:
+# sudo apptainer build bakta.sif bakta.def
+
+%environment
+    export LC_ALL=C
+    export PATH=/opt/conda/envs/bakta/bin:$PATH
+
+%post
+    set -e
+
+    # 1. Install minimal system dependencies
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        wget \
+        curl \
+        bzip2 \
+        ca-certificates \
+        build-essential && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+    # 2. Install mamba in base env for faster, more reliable solves
+    /opt/conda/bin/conda install -y -n base -c conda-forge mamba
+
+    # 3. Create a dedicated Bakta env with compatibility pins
+    # Bakta 1.7.0 works with pyrodigal 2.1.0; newer pyrodigal releases can break
+    # MAG-related workflows expecting pyrodigal.OrfFinder.
+    /opt/conda/bin/mamba create -y \
+        --name bakta \
+        --channel conda-forge \
+        --channel bioconda \
+        --strict-channel-priority \
+        python=3.10 \
+        bakta=1.7.0 \
+        pyrodigal=2.1.0
+
+    # 4. Publish stable executable paths
+    ln -sf /opt/conda/envs/bakta/bin/bakta /usr/local/bin/bakta
+    ln -sf /opt/conda/envs/bakta/bin/bakta_db /usr/local/bin/bakta_db
+
+    # 5. Clean Conda caches
+    /opt/conda/bin/conda clean -a -y
+
+%runscript
+    exec /usr/local/bin/bakta "$@"
+
+%labels
+    Maintainer lowry-nitrogen-team
+    CreationDate 2026-04-07
+    Version bakta-1.7.0-py310-pyrodigal210
+    Description Singularity container for Bakta with Python 3.10 and pyrodigal 2.1.0 compatibility pin.
+
+%help
+This Singularity container provides Bakta in a dedicated Conda environment.
+
+Pinned components:
+    - Python 3.10
+    - Bakta 1.7.0
+    - pyrodigal 2.1.0
+
+Build example:
+    sudo apptainer build bakta.sif bakta.def
+
+Usage examples:
+    apptainer exec bakta.sif bakta --help
+    apptainer exec bakta.sif bakta_db download --help
+
+Notes:
+    - Bakta databases are not bundled into this image.
+    - Provide a database path with --db, or download one with bakta_db.

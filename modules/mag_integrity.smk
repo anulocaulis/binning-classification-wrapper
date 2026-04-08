@@ -80,7 +80,7 @@ rule magqual_label_mimag:
         done=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual/mimag.done"
     params:
         outdir=f"{OUTPUT_DIR}/{{sample}}/mag_integrity/magqual",
-        container=MAGQUAL_CONTAINER,
+        container=BAKTA_CONTAINER,
         bakta_db=lambda wildcards: config.get("magqual", {}).get("bakta_db", "")
     threads: config["threads"]
     log: "logs/mag_integrity_magqual_{sample}.log"
@@ -102,17 +102,32 @@ rule magqual_label_mimag:
         bins_abs=$(realpath {input.bins_dir})
         bakta_db_abs=$(realpath {params.bakta_db})
         out_abs=$(realpath {params.outdir})
+        amrfinder_ready="$bakta_db_abs/.amrfinderplus_ready"
 
         mkdir -p "$out_abs/analysis/bakta/{wildcards.sample}"
 
-        # bakta 1.8.1 in magqual.sif uses pyrodigal.OrfFinder (pre-3.x API).
-        # Install pyrodigal==2.1.0 to a local dir and override via PYTHONPATH.
-        pyrodigal_fix="$out_abs/.pyrodigal_fix"
-        mkdir -p "$pyrodigal_fix"
-        singularity exec \
-            -B "$out_abs:$out_abs" \
-            "$container_abs" \
-            sh -lc "PATH=/opt/conda/envs/magqual/bin:$PATH; pip install 'pyrodigal==2.1.0' -q --target '$pyrodigal_fix'" >> {log} 2>&1
+        # bakta.sif has correct pyrodigal version pre-installed.
+        # AMRFinder needs its own internal DB setup (once per bakta_db).
+        if [ ! -f "$amrfinder_ready" ]; then
+            echo "Initializing AMRFinder internal DB at $bakta_db_abs" >> {log}
+            if ! singularity exec \
+                -B "$bakta_db_abs:$bakta_db_abs" \
+                "$container_abs" \
+                amrfinder_update --force_update --database "$bakta_db_abs/amrfinderplus-db" >> {log} 2>&1; then
+                echo "amrfinder_update failed; trying bakta_db download fallback" >> {log}
+                singularity exec \
+                    -B "$bakta_db_abs:$bakta_db_abs" \
+                    "$container_abs" \
+                    bakta_db download --output "$bakta_db_abs" >> {log} 2>&1
+                singularity exec \
+                    -B "$bakta_db_abs:$bakta_db_abs" \
+                    "$container_abs" \
+                    amrfinder_update --force_update --database "$bakta_db_abs/amrfinderplus-db" >> {log} 2>&1
+            fi
+            touch "$amrfinder_ready"
+        else
+            echo "AMRFinder internal DB already initialized; skipping setup" >> {log}
+        fi
 
         for f in "$bins_abs"/*.fa; do
             name=$(basename "$f" .fa)
@@ -130,7 +145,7 @@ rule magqual_label_mimag:
                 -B "$out_abs:$out_abs" \
                 -B "$bakta_db_abs:$bakta_db_abs" \
                 "$container_abs" \
-                sh -lc "PATH=/opt/conda/envs/magqual/bin:$PATH; PYTHONPATH='$pyrodigal_fix' bakta --force --db '$bakta_db_abs' --output '$bin_out' --prefix '$name' --threads {threads} '$f'" >> {log} 2>&1
+                bakta --db "$bakta_db_abs" --output "$bin_out" --prefix "$name" --threads {threads} "$f" >> {log} 2>&1
         done
 
         touch {output.done}
