@@ -47,6 +47,7 @@ GUNC_ENABLED = bool(config.get("gunc_db")) and os.path.exists(config["gunc_db"])
     CLASSIFICATION_GTD_GUNC_CONTAINER, "gunc"
 )
 MAGSCOT_ENABLED = bool(config.get("magscot", {}).get("enabled", False))
+COMINGLED_ENABLED = bool(config.get("comingled_binning", {}).get("enabled", False))
 BLOBOLOGY_NT_DB = config.get("blobology_nt_db", "/home/beitnerm/NCBI_NT_DB/nt.00.nhd")
 BLOBOLOGY_ENABLED = os.path.exists(BLOBOLOGY_NT_DB)
 
@@ -98,6 +99,15 @@ if MAGSCOT_ENABLED:
 
 BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/binning/vamb.done", sample=ALL_SAMPLES))
 
+if COMINGLED_ENABLED:
+    comingled_types = config.get("comingled_binning", {}).get("assembly_types", ASSEMBLY_TYPES)
+    BASE_TARGETS.extend(
+        expand(f"{OUTPUT_DIR}/comingled/{{assembly_type}}/metawrap/comingled_metawrap.done", assembly_type=comingled_types)
+    )
+    BASE_TARGETS.extend(
+        expand(f"{OUTPUT_DIR}/comingled/{{assembly_type}}/vamb/comingled_vamb.done", assembly_type=comingled_types)
+    )
+
 rule all:
     input:
         BASE_TARGETS,
@@ -112,5 +122,6 @@ include: "modules/nonpareil.smk"
 include: "modules/mag_integrity.smk"
 include: "modules/magscot.smk"
 include: "modules/vamb.smk"
+include: "modules/comingled_binning.smk"
 include: "modules/functional_annotation.smk"
 include: "modules/multiqc.smk"

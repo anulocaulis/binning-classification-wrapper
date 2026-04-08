@@ -11,9 +11,9 @@ executor: slurm
 default-resources:
   slurm_partition: "math-alderaan"
   runtime: "2880"             # 48 hours in minutes (max for math-alderaan is 7 days)
-  mem_mb: 360000              # Increased to 350GB per job (was 240GB) - prevents metaspades OOM
+  mem_mb: 360000              # Increased to 350GB per job (was 240GB)
   threads: 16                 # 16 threads per job - good balance for assembly
   slurm_account: biology-miller-annotation
-  slurm_logdir: /storage/biology/projects/miller-lowry/beitner/Lowry-assemblies/slurm_logs
+  slurm_logdir: /storage/biology/projects/miller-lowry/beitner/binning-classification-wrapper/slurm_logs
   slurm_mail_type: "END,FAIL"  # Email on job completion or failure
   slurm_mail_user: "mike.beitner@ucdenver.edu"
