@@ -101,6 +101,7 @@ BASE_TARGETS.extend(expand(f"{OUTPUT_DIR}/{{sample}}/binning/vamb.done", sample=
 rule all:
     input:
         BASE_TARGETS,
+        f"{OUTPUT_DIR}/multiqc_inputs/collected.done",
         f"{OUTPUT_DIR}/multiqc/multiqc_report.html"
 
 include: "modules/preassembly_qc.smk"
