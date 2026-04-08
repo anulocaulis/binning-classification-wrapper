@@ -5,15 +5,19 @@
 
 # Ignore Snakemake internal files and output directories
 .snakemake/
-binning_outputs/                    # All workflow outputs (bins, classifications, QC results)
-multiqc_inputs/                     # MultiQC staging directory (symlinks to binning_outputs)
+binning_outputs/
+multiqc_inputs/
 classification_outputs/
 qc/
-logs/                               # Workflow log files
-slurm_logs/                          # SLURM job logs
-data/                               # Input data (reads, etc.)
-databases/                          # Reference databases (Kraken2, GTDB-Tk, etc.)
-busco_downloads/                    # BUSCO lineage downloads
+logs/
+slurm_logs/
+data/
+databases/
+**/databases/
+**/databases/**
+busco_downloads/
+**/busco_downloads/
+**/busco_downloads/**
 
 # Python and IDE
 __pycache__/
