@@ -367,11 +367,11 @@ conda activate snake_env
 snakemake --profile slurm_profile --cores 13
 ```
 
-This will submit jobs to the `math-alderaan` partition with:
+This will submit jobs to the HPC partition with:
 - 16 threads per job
 - 350 GB RAM
 - 48 hour runtime
-- Account: `biology-miller-annotation`
+
 
 ### Test mode
 
