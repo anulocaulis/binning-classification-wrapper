@@ -1,0 +1,110 @@
+binning_outputs/
+|-- S1
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+|-- S10
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- binning
+|   |   |-- metabat2_bins
+|   |   `-- work_files
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+|-- S11
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- binning
+|   |   |-- concoct_bins
+|   |   |-- maxbin2_bins
+|   |   |-- metabat2_bins
+|   |   |-- vamb
+|   |   `-- work_files
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+|-- S12
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- binning
+|   |   |-- maxbin2_bins
+|   |   |-- metabat2_bins
+|   |   |-- vamb
+|   |   `-- work_files
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+|-- S2
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- binning
+|   |   |-- metabat2_bins
+|   |   `-- work_files
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+|-- S4
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+|-- S5
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- binning
+|   |   |-- metabat2_bins
+|   |   `-- work_files
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+|-- S6
+|   `-- assembly_eval
+|       `-- sr
+|-- S7
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+|-- S8
+|   |-- assembly_eval
+|   |   `-- sr
+|   |-- classification
+|   |   `-- kraken2
+|   `-- preassembly_qc
+|       |-- fastqc
+|       `-- split_reads
+`-- S9
+    |-- assembly_eval
+    |   `-- sr
+    |-- binning
+    |   |-- maxbin2_bins
+    |   |-- metabat2_bins
+    |   `-- work_files
+    |-- classification
+    |   `-- kraken2
+    `-- preassembly_qc
+        |-- fastqc
+        `-- split_reads
+
+107 directories, 0 files

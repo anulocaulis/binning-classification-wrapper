@@ -12,6 +12,41 @@ This pipeline integrates multiple metagenomic analysis tools into a cohesive Sna
 - **Filtlong** (long-read filtering, ONT samples only; min_length=1000bp, min_mean_q=10)
 - **Split Interleaved Reads** (converts interleaved FASTQ to R1/R2 pairs for downstream tools)
 
+## Recommended Assembly Layout (Canonical)
+
+For pooled co-binning, use a single predictable assembly tree so users can copy files in without changing rules.
+
+Directory contract:
+
+```text
+<assembly_root_dir>/
+  megahit/
+    s1.assembly.fasta
+    s2.assembly.fasta
+    ...
+  flye/
+    s1.assembly.fasta
+    ...
+```
+
+Supported preferred filename inside each assembler directory:
+- `<sample>.assembly.fasta` (lowercase sample recommended)
+
+Also accepted for compatibility:
+- `<sample>.assembly.fa`
+- `<sample>.<assembler>.fasta`
+- `<sample>.<assembler>.fa`
+
+Where:
+- `assembly_root_dir` is configured in `config.yaml`
+- `assembler` is derived from `assembly.<name>` (for example, `assembly.megahit` -> `megahit`)
+
+Legacy layout remains accepted for backward compatibility:
+
+```text
+<assembly_root_dir>/<sample>/<assembly_subdir>/...
+```
+
 ### Binning and bin refinement
 - **MetaWRAP binning** — runs three concurrent binning algorithms:
   - MetaBAT2
@@ -44,7 +79,9 @@ This pipeline integrates multiple metagenomic analysis tools into a cohesive Sna
 ## Active modules
 
 - `modules/preassembly_qc.smk` — FastQC, NanoPlot, Filtlong, split reads
-- `modules/metawrap.smk` — binning (MetaBAT2, MaxBin2, CONCOCT), refinement, blobology, CheckM2
+- `modules/readmap_prep.smk` — shared read/assembly prep utilities (trim/deinterleave and assembly/readmap helper rules)
+- `modules/metawrap_cobinning.smk` — per-sample by-assembly MetaWRAP binning (MetaBAT2, MaxBin2, CONCOCT), refinement, canonical output linking, CheckM2
+- `modules/metawrap_assembly_benchmark_binning.smk` — assembly benchmark binning/refinement/checkm2 + HQMAG selection
 - `modules/vamb.smk` — VAMB abundance generation and VAE binning (unconditional, all samples)
 - `modules/magscot.smk` — MAGScoT marker generation, protein prediction, bin refinement (optional)
 - `modules/classification.smk` — Kraken2, GTDB-Tk
@@ -485,7 +522,7 @@ The `split_interleaved_reads` rule automatically converts these to separate R1/R
 
 ### Bin refinement thresholds
 
-MetaWRAP `bin_refinement` applies **50% completeness + 10% contamination** criteria (configurable in `modules/metawrap.smk` if stricter/looser filtering is desired).
+MetaWRAP `bin_refinement` applies **50% completeness + 10% contamination** criteria (configurable in `modules/metawrap_cobinning.smk` and `modules/metawrap_assembly_benchmark_binning.smk` if stricter/looser filtering is desired).
 
 ### Nonpareil methodology
 

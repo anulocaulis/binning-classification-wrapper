@@ -10,10 +10,8 @@ latency-wait: 4               # Time (seconds) to wait between job status checks
 executor: slurm
 default-resources:
   slurm_partition: "math-alderaan"
-  runtime: "2880"             # 48 hours in minutes (max for math-alderaan is 7 days)
+  runtime: "9720"             # 6.75 days in minutes (within 7-day partition maximum)
   mem_mb: 360000              # Increased to 350GB per job (was 240GB)
   threads: 16                 # 16 threads per job - good balance for assembly
   slurm_account: biology-miller-annotation
   slurm_logdir: /storage/biology/projects/miller-lowry/beitner/binning-classification-wrapper/slurm_logs
-  slurm_mail_type: "END,FAIL"  # Email on job completion or failure
-  slurm_mail_user: "mike.beitner@ucdenver.edu"

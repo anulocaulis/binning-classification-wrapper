@@ -1,0 +1,767 @@
+digraph snakemake_dag {
+    graph[bgcolor=white, margin=0];
+    node[shape=box, style=rounded, fontname=sans,                 fontsize=10, penwidth=2];
+    edge[penwidth=2, color=grey];
+	0[label = "all", color = "0.02 0.6 0.85", style="rounded"];
+	1[label = "fastqc_short_reads\nsample: S1", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	2[label = "fastqc_short_reads\nsample: S2", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	3[label = "fastqc_short_reads\nsample: S3", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	4[label = "fastqc_short_reads\nsample: S4", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	5[label = "fastqc_short_reads\nsample: S5", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	6[label = "fastqc_short_reads\nsample: S6", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	7[label = "fastqc_short_reads\nsample: S7", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	8[label = "fastqc_short_reads\nsample: S8", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	9[label = "fastqc_short_reads\nsample: S9", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	10[label = "fastqc_short_reads\nsample: S10", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	11[label = "fastqc_short_reads\nsample: S11", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	12[label = "fastqc_short_reads\nsample: S12", color = "0.17 0.6 0.85", style="rounded,dashed"];
+	13[label = "split_interleaved_reads\nsample: S1", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	14[label = "split_interleaved_reads\nsample: S2", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	15[label = "split_interleaved_reads\nsample: S3", color = "0.59 0.6 0.85", style="rounded"];
+	16[label = "split_interleaved_reads\nsample: S4", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	17[label = "split_interleaved_reads\nsample: S5", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	18[label = "split_interleaved_reads\nsample: S6", color = "0.59 0.6 0.85", style="rounded"];
+	19[label = "split_interleaved_reads\nsample: S7", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	20[label = "split_interleaved_reads\nsample: S8", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	21[label = "split_interleaved_reads\nsample: S9", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	22[label = "split_interleaved_reads\nsample: S10", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	23[label = "split_interleaved_reads\nsample: S11", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	24[label = "split_interleaved_reads\nsample: S12", color = "0.59 0.6 0.85", style="rounded,dashed"];
+	25[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded"];
+	26[label = "stage_clean_interleaved_reads\nsample: S1", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	27[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded,dashed"];
+	28[label = "stage_clean_interleaved_reads\nsample: S2", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	29[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded"];
+	30[label = "stage_clean_interleaved_reads\nsample: S3", color = "0.61 0.6 0.85", style="rounded"];
+	31[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded"];
+	32[label = "stage_clean_interleaved_reads\nsample: S4", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	33[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded"];
+	34[label = "stage_clean_interleaved_reads\nsample: S5", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	35[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded"];
+	36[label = "stage_clean_interleaved_reads\nsample: S6", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	37[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded"];
+	38[label = "stage_clean_interleaved_reads\nsample: S7", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	39[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded"];
+	40[label = "stage_clean_interleaved_reads\nsample: S8", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	41[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded,dashed"];
+	42[label = "stage_clean_interleaved_reads\nsample: S9", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	43[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded,dashed"];
+	44[label = "stage_clean_interleaved_reads\nsample: S10", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	45[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded,dashed"];
+	46[label = "stage_clean_interleaved_reads\nsample: S11", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	47[label = "metawrap_binning", color = "0.44 0.6 0.85", style="rounded,dashed"];
+	48[label = "stage_clean_interleaved_reads\nsample: S12", color = "0.61 0.6 0.85", style="rounded,dashed"];
+	49[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	50[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	51[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	52[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	53[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	54[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	55[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	56[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	57[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	58[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	59[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	60[label = "metawrap_bin_refinement", color = "0.42 0.6 0.85", style="rounded"];
+	61[label = "kraken2_classify\nsample: S1", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	62[label = "kraken2_classify\nsample: S2", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	63[label = "kraken2_classify\nsample: S3", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	64[label = "kraken2_classify\nsample: S4", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	65[label = "kraken2_classify\nsample: S5", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	66[label = "kraken2_classify\nsample: S6", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	67[label = "kraken2_classify\nsample: S7", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	68[label = "kraken2_classify\nsample: S8", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	69[label = "kraken2_classify\nsample: S9", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	70[label = "kraken2_classify\nsample: S10", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	71[label = "kraken2_classify\nsample: S11", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	72[label = "kraken2_classify\nsample: S12", color = "0.25 0.6 0.85", style="rounded,dashed"];
+	73[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S1", color = "0.38 0.6 0.85", style="rounded"];
+	74[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S2", color = "0.38 0.6 0.85", style="rounded"];
+	75[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S3", color = "0.38 0.6 0.85", style="rounded"];
+	76[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S4", color = "0.38 0.6 0.85", style="rounded"];
+	77[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S5", color = "0.38 0.6 0.85", style="rounded"];
+	78[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S6", color = "0.38 0.6 0.85", style="rounded"];
+	79[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S7", color = "0.38 0.6 0.85", style="rounded"];
+	80[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S8", color = "0.38 0.6 0.85", style="rounded"];
+	81[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S9", color = "0.38 0.6 0.85", style="rounded"];
+	82[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S10", color = "0.38 0.6 0.85", style="rounded"];
+	83[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S11", color = "0.38 0.6 0.85", style="rounded"];
+	84[label = "metaquast_assembly_eval\nassembly_type: sr\nsample: S12", color = "0.38 0.6 0.85", style="rounded"];
+	85[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S1", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	86[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S2", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	87[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S3", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	88[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S4", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	89[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S5", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	90[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S6", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	91[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S7", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	92[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S8", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	93[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S9", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	94[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S10", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	95[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S11", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	96[label = "nonpareil_assembly_eval\nassembly_type: sr\nsample: S12", color = "0.53 0.6 0.85", style="rounded,dashed"];
+	97[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded"];
+	98[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S1", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	99[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded,dashed"];
+	100[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S2", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	101[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded"];
+	102[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S3", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	103[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded"];
+	104[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S4", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	105[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded,dashed"];
+	106[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S5", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	107[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded"];
+	108[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S6", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	109[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded"];
+	110[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S7", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	111[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded"];
+	112[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S8", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	113[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded,dashed"];
+	114[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S9", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	115[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded,dashed"];
+	116[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S10", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	117[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded,dashed"];
+	118[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S11", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	119[label = "samtools_mapping_stats", color = "0.57 0.6 0.85", style="rounded,dashed"];
+	120[label = "map_short_reads_to_assembly\nassembly_type: sr\nsample: S12", color = "0.36 0.6 0.85", style="rounded,dashed"];
+	121[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	122[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	123[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	124[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	125[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	126[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	127[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	128[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	129[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	130[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	131[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	132[label = "busco_assess_bins", color = "0.04 0.6 0.85", style="rounded"];
+	133[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	134[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	135[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	136[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	137[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	138[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	139[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	140[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	141[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	142[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	143[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	144[label = "magqual_label_mimag", color = "0.27 0.6 0.85", style="rounded"];
+	145[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	146[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	147[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	148[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	149[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	150[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	151[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	152[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	153[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	154[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	155[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	156[label = "prokka_annotate_bins", color = "0.55 0.6 0.85", style="rounded"];
+	157[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	158[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	159[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	160[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	161[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	162[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	163[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	164[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	165[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	166[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	167[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	168[label = "checkm2_quality", color = "0.06 0.6 0.85", style="rounded"];
+	169[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	170[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	171[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	172[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	173[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	174[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	175[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	176[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	177[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	178[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	179[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	180[label = "gtdbtk_classify", color = "0.21 0.6 0.85", style="rounded"];
+	181[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	182[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	183[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	184[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	185[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	186[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	187[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	188[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	189[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	190[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	191[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	192[label = "gunc_assess_bins", color = "0.23 0.6 0.85", style="rounded"];
+	193[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	194[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded"];
+	195[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	196[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded,dashed"];
+	197[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	198[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded"];
+	199[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	200[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded"];
+	201[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	202[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded,dashed"];
+	203[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	204[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded"];
+	205[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	206[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded"];
+	207[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	208[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded,dashed"];
+	209[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	210[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded,dashed"];
+	211[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	212[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded,dashed"];
+	213[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	214[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded,dashed"];
+	215[label = "vamb_bin_default", color = "0.63 0.6 0.85", style="rounded"];
+	216[label = "vamb_generate_abundance_tsv", color = "0.65 0.6 0.85", style="rounded,dashed"];
+	217[label = "comingled_metawrap_binning", color = "0.11 0.6 0.85", style="rounded"];
+	218[label = "comingled_concat_assemblies\nassembly_type: sr", color = "0.08 0.6 0.85", style="rounded"];
+	219[label = "comingled_vamb_bin_default", color = "0.15 0.6 0.85", style="rounded"];
+	220[label = "comingled_vamb_abundance_tsv", color = "0.13 0.6 0.85", style="rounded"];
+	221[label = "comingled_map_sample_to_combined\nsample: S1", color = "0.10 0.6 0.85", style="rounded"];
+	222[label = "comingled_map_sample_to_combined\nsample: S2", color = "0.10 0.6 0.85", style="rounded"];
+	223[label = "comingled_map_sample_to_combined\nsample: S3", color = "0.10 0.6 0.85", style="rounded"];
+	224[label = "comingled_map_sample_to_combined\nsample: S4", color = "0.10 0.6 0.85", style="rounded"];
+	225[label = "comingled_map_sample_to_combined\nsample: S5", color = "0.10 0.6 0.85", style="rounded"];
+	226[label = "comingled_map_sample_to_combined\nsample: S6", color = "0.10 0.6 0.85", style="rounded"];
+	227[label = "comingled_map_sample_to_combined\nsample: S7", color = "0.10 0.6 0.85", style="rounded"];
+	228[label = "comingled_map_sample_to_combined\nsample: S8", color = "0.10 0.6 0.85", style="rounded"];
+	229[label = "comingled_map_sample_to_combined\nsample: S9", color = "0.10 0.6 0.85", style="rounded"];
+	230[label = "comingled_map_sample_to_combined\nsample: S10", color = "0.10 0.6 0.85", style="rounded"];
+	231[label = "comingled_map_sample_to_combined\nsample: S11", color = "0.10 0.6 0.85", style="rounded"];
+	232[label = "comingled_map_sample_to_combined\nsample: S12", color = "0.10 0.6 0.85", style="rounded"];
+	233[label = "multiqc_collect", color = "0.48 0.6 0.85", style="rounded"];
+	234[label = "multiqc_report", color = "0.50 0.6 0.85", style="rounded"];
+	1 -> 0
+	2 -> 0
+	3 -> 0
+	4 -> 0
+	5 -> 0
+	6 -> 0
+	7 -> 0
+	8 -> 0
+	9 -> 0
+	10 -> 0
+	11 -> 0
+	12 -> 0
+	13 -> 0
+	14 -> 0
+	15 -> 0
+	16 -> 0
+	17 -> 0
+	18 -> 0
+	19 -> 0
+	20 -> 0
+	21 -> 0
+	22 -> 0
+	23 -> 0
+	24 -> 0
+	25 -> 0
+	27 -> 0
+	29 -> 0
+	31 -> 0
+	33 -> 0
+	35 -> 0
+	37 -> 0
+	39 -> 0
+	41 -> 0
+	43 -> 0
+	45 -> 0
+	47 -> 0
+	49 -> 0
+	50 -> 0
+	51 -> 0
+	52 -> 0
+	53 -> 0
+	54 -> 0
+	55 -> 0
+	56 -> 0
+	57 -> 0
+	58 -> 0
+	59 -> 0
+	60 -> 0
+	61 -> 0
+	62 -> 0
+	63 -> 0
+	64 -> 0
+	65 -> 0
+	66 -> 0
+	67 -> 0
+	68 -> 0
+	69 -> 0
+	70 -> 0
+	71 -> 0
+	72 -> 0
+	73 -> 0
+	74 -> 0
+	75 -> 0
+	76 -> 0
+	77 -> 0
+	78 -> 0
+	79 -> 0
+	80 -> 0
+	81 -> 0
+	82 -> 0
+	83 -> 0
+	84 -> 0
+	85 -> 0
+	86 -> 0
+	87 -> 0
+	88 -> 0
+	89 -> 0
+	90 -> 0
+	91 -> 0
+	92 -> 0
+	93 -> 0
+	94 -> 0
+	95 -> 0
+	96 -> 0
+	97 -> 0
+	99 -> 0
+	101 -> 0
+	103 -> 0
+	105 -> 0
+	107 -> 0
+	109 -> 0
+	111 -> 0
+	113 -> 0
+	115 -> 0
+	117 -> 0
+	119 -> 0
+	121 -> 0
+	122 -> 0
+	123 -> 0
+	124 -> 0
+	125 -> 0
+	126 -> 0
+	127 -> 0
+	128 -> 0
+	129 -> 0
+	130 -> 0
+	131 -> 0
+	132 -> 0
+	133 -> 0
+	134 -> 0
+	135 -> 0
+	136 -> 0
+	137 -> 0
+	138 -> 0
+	139 -> 0
+	140 -> 0
+	141 -> 0
+	142 -> 0
+	143 -> 0
+	144 -> 0
+	145 -> 0
+	146 -> 0
+	147 -> 0
+	148 -> 0
+	149 -> 0
+	150 -> 0
+	151 -> 0
+	152 -> 0
+	153 -> 0
+	154 -> 0
+	155 -> 0
+	156 -> 0
+	157 -> 0
+	158 -> 0
+	159 -> 0
+	160 -> 0
+	161 -> 0
+	162 -> 0
+	163 -> 0
+	164 -> 0
+	165 -> 0
+	166 -> 0
+	167 -> 0
+	168 -> 0
+	169 -> 0
+	170 -> 0
+	171 -> 0
+	172 -> 0
+	173 -> 0
+	174 -> 0
+	175 -> 0
+	176 -> 0
+	177 -> 0
+	178 -> 0
+	179 -> 0
+	180 -> 0
+	181 -> 0
+	182 -> 0
+	183 -> 0
+	184 -> 0
+	185 -> 0
+	186 -> 0
+	187 -> 0
+	188 -> 0
+	189 -> 0
+	190 -> 0
+	191 -> 0
+	192 -> 0
+	193 -> 0
+	195 -> 0
+	197 -> 0
+	199 -> 0
+	201 -> 0
+	203 -> 0
+	205 -> 0
+	207 -> 0
+	209 -> 0
+	211 -> 0
+	213 -> 0
+	215 -> 0
+	217 -> 0
+	219 -> 0
+	233 -> 0
+	234 -> 0
+	26 -> 25
+	28 -> 27
+	30 -> 29
+	32 -> 31
+	34 -> 33
+	36 -> 35
+	38 -> 37
+	40 -> 39
+	42 -> 41
+	44 -> 43
+	46 -> 45
+	48 -> 47
+	25 -> 49
+	27 -> 50
+	29 -> 51
+	31 -> 52
+	33 -> 53
+	35 -> 54
+	37 -> 55
+	39 -> 56
+	41 -> 57
+	43 -> 58
+	45 -> 59
+	47 -> 60
+	98 -> 97
+	100 -> 99
+	102 -> 101
+	104 -> 103
+	106 -> 105
+	108 -> 107
+	110 -> 109
+	112 -> 111
+	114 -> 113
+	116 -> 115
+	118 -> 117
+	120 -> 119
+	49 -> 121
+	50 -> 122
+	51 -> 123
+	52 -> 124
+	53 -> 125
+	54 -> 126
+	55 -> 127
+	56 -> 128
+	57 -> 129
+	58 -> 130
+	59 -> 131
+	60 -> 132
+	49 -> 133
+	50 -> 134
+	51 -> 135
+	52 -> 136
+	53 -> 137
+	54 -> 138
+	55 -> 139
+	56 -> 140
+	57 -> 141
+	58 -> 142
+	59 -> 143
+	60 -> 144
+	49 -> 145
+	50 -> 146
+	51 -> 147
+	52 -> 148
+	53 -> 149
+	54 -> 150
+	55 -> 151
+	56 -> 152
+	57 -> 153
+	58 -> 154
+	59 -> 155
+	60 -> 156
+	49 -> 157
+	50 -> 158
+	51 -> 159
+	52 -> 160
+	53 -> 161
+	54 -> 162
+	55 -> 163
+	56 -> 164
+	57 -> 165
+	58 -> 166
+	59 -> 167
+	60 -> 168
+	49 -> 169
+	50 -> 170
+	51 -> 171
+	52 -> 172
+	53 -> 173
+	54 -> 174
+	55 -> 175
+	56 -> 176
+	57 -> 177
+	58 -> 178
+	59 -> 179
+	60 -> 180
+	49 -> 181
+	50 -> 182
+	51 -> 183
+	52 -> 184
+	53 -> 185
+	54 -> 186
+	55 -> 187
+	56 -> 188
+	57 -> 189
+	58 -> 190
+	59 -> 191
+	60 -> 192
+	194 -> 193
+	98 -> 194
+	196 -> 195
+	100 -> 196
+	198 -> 197
+	102 -> 198
+	200 -> 199
+	104 -> 200
+	202 -> 201
+	106 -> 202
+	204 -> 203
+	108 -> 204
+	206 -> 205
+	110 -> 206
+	208 -> 207
+	112 -> 208
+	210 -> 209
+	114 -> 210
+	212 -> 211
+	116 -> 212
+	214 -> 213
+	118 -> 214
+	216 -> 215
+	120 -> 216
+	218 -> 217
+	218 -> 219
+	220 -> 219
+	218 -> 220
+	221 -> 220
+	222 -> 220
+	223 -> 220
+	224 -> 220
+	225 -> 220
+	226 -> 220
+	227 -> 220
+	228 -> 220
+	229 -> 220
+	230 -> 220
+	231 -> 220
+	232 -> 220
+	218 -> 221
+	218 -> 222
+	218 -> 223
+	218 -> 224
+	218 -> 225
+	218 -> 226
+	218 -> 227
+	218 -> 228
+	218 -> 229
+	218 -> 230
+	218 -> 231
+	218 -> 232
+	1 -> 233
+	2 -> 233
+	3 -> 233
+	4 -> 233
+	5 -> 233
+	6 -> 233
+	7 -> 233
+	8 -> 233
+	9 -> 233
+	10 -> 233
+	11 -> 233
+	12 -> 233
+	13 -> 233
+	14 -> 233
+	15 -> 233
+	16 -> 233
+	17 -> 233
+	18 -> 233
+	19 -> 233
+	20 -> 233
+	21 -> 233
+	22 -> 233
+	23 -> 233
+	24 -> 233
+	25 -> 233
+	27 -> 233
+	29 -> 233
+	31 -> 233
+	33 -> 233
+	35 -> 233
+	37 -> 233
+	39 -> 233
+	41 -> 233
+	43 -> 233
+	45 -> 233
+	47 -> 233
+	49 -> 233
+	50 -> 233
+	51 -> 233
+	52 -> 233
+	53 -> 233
+	54 -> 233
+	55 -> 233
+	56 -> 233
+	57 -> 233
+	58 -> 233
+	59 -> 233
+	60 -> 233
+	61 -> 233
+	62 -> 233
+	63 -> 233
+	64 -> 233
+	65 -> 233
+	66 -> 233
+	67 -> 233
+	68 -> 233
+	69 -> 233
+	70 -> 233
+	71 -> 233
+	72 -> 233
+	73 -> 233
+	74 -> 233
+	75 -> 233
+	76 -> 233
+	77 -> 233
+	78 -> 233
+	79 -> 233
+	80 -> 233
+	81 -> 233
+	82 -> 233
+	83 -> 233
+	84 -> 233
+	85 -> 233
+	86 -> 233
+	87 -> 233
+	88 -> 233
+	89 -> 233
+	90 -> 233
+	91 -> 233
+	92 -> 233
+	93 -> 233
+	94 -> 233
+	95 -> 233
+	96 -> 233
+	97 -> 233
+	99 -> 233
+	101 -> 233
+	103 -> 233
+	105 -> 233
+	107 -> 233
+	109 -> 233
+	111 -> 233
+	113 -> 233
+	115 -> 233
+	117 -> 233
+	119 -> 233
+	121 -> 233
+	122 -> 233
+	123 -> 233
+	124 -> 233
+	125 -> 233
+	126 -> 233
+	127 -> 233
+	128 -> 233
+	129 -> 233
+	130 -> 233
+	131 -> 233
+	132 -> 233
+	133 -> 233
+	134 -> 233
+	135 -> 233
+	136 -> 233
+	137 -> 233
+	138 -> 233
+	139 -> 233
+	140 -> 233
+	141 -> 233
+	142 -> 233
+	143 -> 233
+	144 -> 233
+	145 -> 233
+	146 -> 233
+	147 -> 233
+	148 -> 233
+	149 -> 233
+	150 -> 233
+	151 -> 233
+	152 -> 233
+	153 -> 233
+	154 -> 233
+	155 -> 233
+	156 -> 233
+	157 -> 233
+	158 -> 233
+	159 -> 233
+	160 -> 233
+	161 -> 233
+	162 -> 233
+	163 -> 233
+	164 -> 233
+	165 -> 233
+	166 -> 233
+	167 -> 233
+	168 -> 233
+	169 -> 233
+	170 -> 233
+	171 -> 233
+	172 -> 233
+	173 -> 233
+	174 -> 233
+	175 -> 233
+	176 -> 233
+	177 -> 233
+	178 -> 233
+	179 -> 233
+	180 -> 233
+	181 -> 233
+	182 -> 233
+	183 -> 233
+	184 -> 233
+	185 -> 233
+	186 -> 233
+	187 -> 233
+	188 -> 233
+	189 -> 233
+	190 -> 233
+	191 -> 233
+	192 -> 233
+	193 -> 233
+	195 -> 233
+	197 -> 233
+	199 -> 233
+	201 -> 233
+	203 -> 233
+	205 -> 233
+	207 -> 233
+	209 -> 233
+	211 -> 233
+	213 -> 233
+	215 -> 233
+	217 -> 233
+	219 -> 233
+	233 -> 234
+}            

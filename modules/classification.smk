@@ -2,10 +2,16 @@
 # Snakemake module for taxonomic classification of reads and MAGs
 # Tools: Kraken2 (read classification), GTDB-Tk (bin classification)
 
+# import necessary Python modules for workflow configuration and utility functions
 import os
 
 
 def resolve_kraken2_db():
+    """
+    Resolves the Kraken2 database path based on the configuration. It checks for the presence of required files
+    in the specified directory and falls back to alternative paths if necessary. This function ensures that a
+    valid Kraken2 database is used for classification, improving the robustness of the workflow.
+    """
     configured = config.get("kraken2_db", "")
     candidates = [configured]
 
@@ -27,10 +33,22 @@ def resolve_kraken2_db():
 rule kraken2_classify:
     """
     Classifies metagenomic reads using Kraken2 against the configured database.
-    Produces a classification report and per-read output.
+    
+    **Inputs:**
+    - reads: Trimmed and filtered interleaved FASTQ from readmap_prep module
+    
+    **Outputs:**
+    - report: Kraken2 classification report with taxonomy summaries
+    - output_file: Per-read classification assignments
+    
+    **Logic:**
+    Kraken2 assigns each read to a taxon based on k-mer matching against the database.
+    Uses trimmed/filtered reads (polyG removed, low-quality bases trimmed) rather than
+    raw reads to improve classification accuracy. Outputs both a summary report and
+    detailed per-read assignments for downstream analysis.
     """
     input:
-        reads = lambda wildcards: config["input_reads"]["short_interleaved"].format(sample=wildcards.sample)
+        reads=f"trimmed_reads/{{sample}}_interleaved_trimmed_polyG_filtered.fastq.gz"
     output:
         report = f"{OUTPUT_DIR}/{{sample}}/classification/kraken2/report.txt",
         output_file = f"{OUTPUT_DIR}/{{sample}}/classification/kraken2/output.kraken"
@@ -65,8 +83,20 @@ rule kraken2_classify:
 # ---
 rule gtdbtk_classify:
     """
-    Classifies refined MAG bins using GTDB-Tk to assign taxonomy based on the
-    GTDB reference database.
+    Classifies refined MAG bins using GTDB-Tk to assign taxonomy based on the GTDB reference database.
+        - Takes the refined bins from the bin refinement step and runs GTDB-Tk to classify them taxonomically.
+        - Outputs a summary report with the assigned taxonomy for each bin, which can be used to understand the taxonomic composition of the recovered MAGs and inform downstream analyses such as functional annotation and comparative genomics.
+        - Logs stdout and stderr to a log file for debugging and reproducibility.
+        - Uses a Singularity container to ensure a consistent environment for running GTDB-Tk, which can help avoid issues with software dependencies and version conflicts.
+        - This rule provides taxonomic classifications for the MAGs, which can be crucial for interpreting the ecological roles of the organisms represented by the bins and understanding their relationships to known taxa in the GTDB database.
+        - Users should check the resulting GTDB-Tk summary report to assess the taxonomic assignments of their bins and ensure that they are consistent with expectations based on the sample type and previous analyses.
+        - Note that GTDB-Tk classification can be computationally intensive, especially for large numbers of bins, so users should ensure that they have sufficient computational resources allocated for this step.
+        - Overall, this rule enhances the classification aspect of the workflow by providing detailed taxonomic assignments for the recovered MAGs, which can be used to gain insights into the microbial community structure and function.
+        - Users should also check the logs for any issues during GTDB-Tk classification and ensure that the resulting summary report contains valid classifications before using it for interpretation or downstream analyses.
+        - This rule is not included in rule all since it is an optional step that may not be needed for all users depending on their specific research questions and analysis goals. However, it is a valuable addition for those interested in obtaining taxonomic classifications for their MAGs based on the GTDB reference database.
+        - Users should also consider running GTDB-Tk with appropriate parameters (e.g., --skip_ani_screen) based on their specific dataset and analysis goals to optimize classification results.
+        - Finally, users should ensure that they have access to a compatible version of GTDB-Tk and its dependencies within the specified Singularity container to avoid any issues during execution.
+        - Overall, this rule provides an important step in classifying MAGs based on GTDB, which can enhance our understanding of microbial diversity and ecology in metagenomic samples.
     """
     input:
         bins_dir = f"{OUTPUT_DIR}/{{sample}}/bin_refinement/metawrap_50_10_bins"

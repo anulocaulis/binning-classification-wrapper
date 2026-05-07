@@ -2,26 +2,26 @@
 # Assembly redundancy/coverage estimation with Nonpareil.
 
 
-def get_assembly_for_type(wildcards):
-    assembly_inputs = config.get("assembly_inputs", {})
-    if wildcards.assembly_type in assembly_inputs:
-        return assembly_inputs[wildcards.assembly_type].format(sample=wildcards.sample)
-    return config["input_reads"]["assembly"].format(sample=wildcards.sample)
-
-
-def nonpareil_input(wildcards):
-    mode = config.get("nonpareil", {}).get("input_mode", "reads")
-    if mode == "assembly":
-        return get_assembly_for_type(wildcards)
-    return config["input_reads"]["short_interleaved"].format(sample=wildcards.sample)
-
-
 rule nonpareil_assembly_eval:
     """
-    Runs Nonpareil on each configured assembly type for comparison samples.
+    Runs Nonpareil for assembly redundancy/coverage estimation.
+    
+    **Inputs:**
+    - source: Trimmed and filtered interleaved FASTQ from readmap_prep module.
+              Contains polyG-filtered, quality-trimmed reads for accurate coverage analysis.
+    
+    **Outputs:**
+    - done: Marker file indicating successful Nonpareil completion.
+            The tool also produces *.npo, *.npe, and *.npc files in the outdir.
+    
+    **Logic:**
+    Nonpareil estimates how much of the sample diversity has been sequenced based on
+    read redundancy patterns. If input is gzip-compressed, it's decompressed to a temporary
+    FASTQ file for Nonpareil processing. The algorithm uses k-mer overlap analysis
+    (kmer mode by default) to determine coverage/redundancy without requiring alignment.
     """
     input:
-        source=nonpareil_input
+        source=f"trimmed_reads/{{sample}}_interleaved_trimmed_polyG_filtered.fastq.gz"
     output:
         done=f"{OUTPUT_DIR}/{{sample}}/assembly_eval/{{assembly_type}}/nonpareil/nonpareil.done"
     params:

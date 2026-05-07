@@ -5,12 +5,24 @@
 test_mode: False
 test_sample: "S1"
 test_assembly_types:
-  - sr
+  - megahit
 test_comparison_samples:
   - S1
 
+# When true, rule all only targets pooled MetaWRAP cobinning outputs.
+metawrap_binning_only_mode: true
+
 # Data directory (absolute path) - organized by sample
 data_dir: "/storage/biology/projects/miller-lowry/beitner/data"
+
+# Root directory for assemblies used by pooled binning.
+# Recommended canonical layout:
+#   <assembly_root_dir>/<assembler>/<sample>.assembly.fasta
+# Example:
+#   /storage/biology/projects/miller-lowry/beitner/data/assemblies/flye/s1.assembly.fasta
+# Backward-compatible legacy layout is still accepted:
+#   <assembly_root_dir>/<sample>/<assembly_subdir>/<assembly_name>.fasta
+assembly_root_dir: "/storage/biology/projects/miller-lowry/beitner/data/assemblies"
 
 # Sample names organized by read type
 # long_read_samples: empty for the current megahit-only test run
@@ -30,6 +42,44 @@ all_samples:
   - S10
   - S11
   - S12
+
+# Pooled MetaWRAP cobinning controls.
+# To keep heavy assemblies from timing out, you can limit contributing samples
+# per assembly_subdir and raise runtime minutes for those assemblies.
+cobinning_samples_by_assembly:
+  assembly.metaspades_hybrid:
+    - S1
+    - S2
+    - S5
+  assembly.flye:
+    - S1
+    - S2
+    - S5
+  assembly.metamdbg:
+    - S1
+    - S2
+    - S5
+
+# Default pooled cobinning runtime (minutes).
+cobinning_runtime_min: 9720
+
+# Per-assembly runtime overrides (minutes).
+cobinning_runtime_min_by_assembly:
+  assembly.metaspades: 9720
+  assembly.metaspades_hybrid: 9720
+
+# Default pooled cobinning thread and memory requests.
+cobinning_threads: 16
+cobinning_mem_mb: 360000
+
+# Per-assembly thread and memory overrides for heavy assemblies.
+cobinning_threads_by_assembly:
+  assembly.metaspades: 32
+  assembly.metaspades_hybrid: 32
+
+cobinning_mem_mb_by_assembly:
+  assembly.metaspades: 500000
+  assembly.metaspades_hybrid: 500000
 
 # Output directory for all binning/classification results (relative to working directory)
 output_dir: "binning_outputs"
@@ -58,6 +108,9 @@ gtdbtk_db: "/storage/biology/projects/miller-lowry/beitner/databases/gtdbtk_db"
 # Path to the CheckM2 DIAMOND database file (for MAG quality scoring).
 checkm2_db: "/storage/biology/projects/miller-lowry/beitner/databases/CheckM2_database/uniref100.KO.1.dmnd"
 
+# Path to CheckM marker database directory (required by MetaWRAP bin_refinement).
+checkm_db: "/storage/biology/projects/miller-lowry/beitner/databases/checkm_data"
+
 # Optional explicit path to MetaWRAP CLI inside the metawrap container.
 metawrap_executable: "/usr/local/bin/metawrap"
 
@@ -69,32 +122,31 @@ clean_data_dir: "/storage/biology/projects/miller-lowry/beitner/data/clean_data"
 clean_reads_source: "/storage/biology/projects/miller-lowry/beitner/metagenomic-multi-assembly-wrapper/trimmed_reads/{sample}_interleaved_trimmed_polyG_filtered.fastq.gz"
 
 # ---
-# Assembly comparison settings (SR/LR/Hybrid)
+# Assembly comparison settings (one target per assembler)
 # comparison_samples defaults to long_read_samples when omitted
 assembly_types:
-  - sr
+  - megahit
+  - idbaud
+  - metaspades
+  - flye
+  - metamdbg
+  # - metaconnet  # temporarily disabled: missing assemblies
+  # - opera_ms  # temporarily disabled: incomplete assemblies
+  - metaspades_hybrid
 
 # Optional: limit assembly comparison to specific samples
-comparison_samples:
-  - S1
-  - S2
-  - S3
-  - S4
-  - S5
-  - S6
-  - S7
-  - S8
-  - S9
-  - S10
-  - S11
-  - S12
+comparison_samples: []  # temporarily disable assembly_eval/metaquast targets
 
-# Optional: explicit assembly paths for each assembly type
-# For test, only use megahit for sr, and fallback for others (will error if not present, as intended for test)
+# Optional: explicit per-assembler assembly paths.
+# This is intentionally assembler-specific (no sr/lr aliases).
 assembly_inputs:
-  sr: "/storage/biology/projects/miller-lowry/beitner/assemblies/{sample}/megahit.final.contigs.fa"
-  lr: "/storage/biology/projects/miller-lowry/beitner/assemblies/{sample}/flye.assembly.fasta"
-  hybrid: "/storage/biology/projects/miller-lowry/beitner/assemblies/{sample}/metaspades_hybrid.contigs.fasta"
+  megahit: "/storage/biology/projects/miller-lowry/beitner/data/assemblies/megahit/{sample_lower}.assembly.fasta"
+  idbaud: "/storage/biology/projects/miller-lowry/beitner/data/assemblies/idbaud/{sample_lower}.assembly.fasta"
+  metaspades: "/storage/biology/projects/miller-lowry/beitner/data/assemblies/metaspades/{sample_lower}.assembly.fasta"
+  flye: "/storage/biology/projects/miller-lowry/beitner/data/assemblies/flye/{sample_lower}.assembly.fasta"
+  metamdbg: "/storage/biology/projects/miller-lowry/beitner/data/assemblies/metamdbg/{sample_lower}.assembly.fasta"
+  metaconnet: "/storage/biology/projects/miller-lowry/beitner/data/assemblies/metaconnet/{sample_lower}.assembly.fasta"
+  metaspades_hybrid: "/storage/biology/projects/miller-lowry/beitner/data/assemblies/metaspades_hybrid/{sample_lower}.assembly.fasta"
 
 # ONT FASTQ input for Filtlong (required for long-read filtering step)
 ont_reads: "/storage/biology/projects/miller-lowry/beitner/data/{sample}/long_reads.fastq.gz"
@@ -189,3 +241,17 @@ multiqc:
   comment: "Consolidated QC and analysis summary"
   # Optional extra CLI args passed to multiqc (example: "--ignore \"*tmp*\" --quiet")
   extra_args: ""
+
+# Binning assembly subdirectories to loop over (all assemblers available)
+binning_assembly_subdirs:
+  - assembly.flye
+  - assembly.megahit
+  - assembly.idbaud
+  - assembly.metaspades
+  # - assembly.metaconnet  # temporarily disabled: incomplete cobinning outputs
+  # - assembly.opera_ms  # temporarily disabled: incomplete assemblies
+  - assembly.metamdbg
+  - assembly.metaspades_hybrid
+
+# Primary assembly subdir for canonical outputs (metabat2_bins, metawrap_50_10_bins, etc.)
+primary_binning_subdir: assembly.megahit
